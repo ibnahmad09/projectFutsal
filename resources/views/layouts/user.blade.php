@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title')</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Di bagian head -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Tambahkan ikon -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
@@ -14,22 +16,31 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <a href="#" class="flex items-center">
-                    <span class="text-white text-2xl font-bold">FUTSAL<span class="text-green-300">DESA</span></span>
+                <a href="{{route('user.home.index')}}" class="flex items-center">
+                    <span class="text-white text-2xl font-bold">FUTSAL<span class="text-green-300">DESA</span>BUKIT<span class="text-green-300">KEMUNING</span></span>
                 </a>
 
                 <!-- Menu Desktop -->
                 <div class="hidden md:flex space-x-8">
-                    <a href="{{ url('/lapangan') }}" class="text-white hover:text-green-200">Lapangan</a>
-                    <a href="{{ url('/tentang') }}" class="text-white hover:text-green-200">Tentang</a>
-                    <a href="{{ url('/profil')}}" class="text-white hover:text-green-200">Profil</a>
-                    <a href="#jadwal" class="text-white hover:text-green-200">Jadwal Saya</a>
+                    <a href="{{route('user.home.index')}}" class="text-white hover:text-green-200">Lapangan</a>
+                    <a href="{{ route('user.abouts.index') }}" class="text-white hover:text-green-200">Tentang</a>
+                    <a href="{{route('user.profil.show')}}" class="text-white hover:text-green-200">Profil</a>
+                    <a href="{{ route('user.bookings.index') }}" class="text-white hover:text-green-200">Riwayat Boooking</a>
                 </div>
 
-                <!-- Tombol Login -->
-                <button class="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition">
-                    Masuk/Daftar
-                </button>
+                <!-- Tombol Login atau Logout -->
+                @if (Auth::check())
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">
+                            Logout
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition">
+                        Masuk/Daftar
+                    </a>
+                @endif
 
                 <!-- Hamburger Menu (Mobile) -->
                 <button class="md:hidden text-white" id="mobile-menu-button">
@@ -41,10 +52,10 @@
         <!-- Menu Mobile -->
         <div class="md:hidden" id="mobile-menu" style="display: none;">
             <div class="flex flex-col space-y-2 px-4 py-2">
-                <a href="{{ url('/lapangan') }}" class="text-white hover:text-green-200">Lapangan</a>
-                <a href="{{ url('/tentang') }}" class="text-white hover:text-green-200">Tentang</a>
-                <a href="{{ url('/profil')}}" class="text-white hover:text-green-200">Profil</a>
-                <a href="#jadwal" class="text-white hover:text-green-200">Jadwal Saya</a>
+                <a href="{{route('user.home.index')}}" class="text-white hover:text-green-200">Lapangan</a>
+                <a href="{{ route('user.abouts.index') }}" class="text-white hover:text-green-200">Tentang</a>
+                <a href="{{route ('user.profil.show')}}" class="text-white hover:text-green-200">Profil</a>
+                <a href="{{ route('user.bookings.index') }}" class="text-white hover:text-green-200">Riwayat Booking</a>
             </div>
         </div>
 

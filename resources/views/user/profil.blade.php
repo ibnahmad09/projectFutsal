@@ -1,4 +1,3 @@
-
 @extends('layouts.user')
 
 @section('title','Profil')
@@ -18,8 +17,8 @@
                         </button>
                     </div>
                     <div class="ml-6">
-                        <h1 class="text-3xl font-bold text-white">John Doe</h1>
-                        <p class="text-green-200">Member sejak 2023</p>
+                        <h1 class="text-3xl font-bold text-white">{{ $user->name }}</h1>
+                        <p class="text-green-200">Member sejak {{ $user->created_at->format('Y') }}</p>
                     </div>
                 </div>
                 <div class="flex space-x-4">
@@ -36,7 +35,26 @@
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <h2 class="text-2xl font-bold mb-6">Profil Anda</h2>
+
+        <form method="POST" action="{{ route('update.profile') }}">
+            @csrf
+            @method('PUT')
+
+            <div class="mb-4">
+                <label for="address" class="block text-gray-600 mb-1">Alamat</label>
+                <input id="address" type="text" class="form-control @error('address') is-invalid @enderror" name="address" value="{{ old('address', Auth::user()->address) }}" required>
+                @error('address')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+
+            <button type="submit" class="btn btn-primary">Simpan</button>
+        </form>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
             <!-- Kolom Kiri -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Info Akun -->
@@ -48,19 +66,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-600 mb-1">Nama Lengkap</label>
-                            <p class="font-medium">John Doe</p>
+                            <p class="font-medium">{{ $user->name }}</p>
                         </div>
                         <div>
                             <label class="block text-gray-600 mb-1">Email</label>
-                            <p class="font-medium">john@example.com</p>
+                            <p class="font-medium">{{ $user->email }}</p>
                         </div>
                         <div>
                             <label class="block text-gray-600 mb-1">Nomor Telepon</label>
-                            <p class="font-medium">+62 812-3456-7890</p>
+                            <p class="font-medium">{{ $user->phone_number }}</p>
                         </div>
                         <div>
                             <label class="block text-gray-600 mb-1">Bergabung Pada</label>
-                            <p class="font-medium">15 Januari 2023</p>
+                            <p class="font-medium">{{ $user->created_at }}</p>
                         </div>
                     </div>
                 </div>

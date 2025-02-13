@@ -1,243 +1,291 @@
-<!-- Tambahkan di bagian bawah sebelum </body> -->
-<div id="bookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <!-- Header Modal -->
-        <div class="p-6 border-b flex justify-between items-center">
-            <h3 class="text-2xl font-bold">Booking Lapangan</h3>
+<!-- Modal Booking -->
+<div id="bookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg w-full max-w-md p-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Booking Lapangan</h3>
             <button onclick="closeBookingModal()" class="text-gray-500 hover:text-gray-700">
-                <i class='bx bx-x text-2xl'></i>
+                &times;
             </button>
         </div>
 
-        <!-- Body Modal -->
-        <div class="p-6">
-            <!-- Step 1 - Pilih Jadwal -->
-            <div id="step1" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block mb-2 font-medium">Tanggal Booking</label>
-                        <input type="date" id="bookingDate"
-                               class="w-full p-2 border rounded-lg"
-                               min="<?= date('Y-m-d') ?>">
-                    </div>
-                    <div>
-                        <label class="block mb-2 font-medium">Durasi (Jam)</label>
-                        <select id="duration" class="w-full p-2 border rounded-lg">
-                            <option value="1">1 Jam</option>
-                            <option value="2">2 Jam</option>
-                            <option value="3">3 Jam</option>
-                        </select>
-                    </div>
+        <!-- Form -->
+        <form id="bookingForm" onsubmit="submitBooking(event)">
+            <input type="hidden" id="field_id" value="{{ $field->id }}">
+
+            <!-- Step 1: Pilih Jadwal -->
+            <div id="step1">
+                <div class="mb-4">
+                    <label class="block mb-2">Tanggal Booking</label>
+                    <input type="date" id="booking_date"
+                           class="w-full p-2 border rounded-lg"
+                           min="{{ now()->addDay()->format('Y-m-d') }}"
+                           required>
                 </div>
 
-                <!-- Time Slot Grid -->
-                <div>
-                    <h4 class="font-medium mb-4">Pilih Jam Mulai</h4>
-                    <div class="grid grid-cols-3 md:grid-cols-4 gap-2" id="timeSlots">
-                        <!-- Time slots akan diisi via JavaScript -->
-                        <div class="p-2 text-center border rounded-lg bg-gray-100 cursor-not-allowed">
-                            08:00 <span class="text-xs text-red-500">(Booked)</span>
-                        </div>
-                        <div class="p-2 text-center border rounded-lg bg-green-100 hover:bg-green-200 cursor-pointer">
-                            09:00
-                        </div>
-                        <!-- Tambahkan lebih banyak slot -->
+                <div class="mb-4">
+                    <label class="block mb-2">Pilih Waktu</label>
+                    <div class="grid grid-cols-3 gap-2" id="timeSlots">
+                        <!-- Time slots akan diisi via JS -->
+                    </div>
+                    <small class="text-gray-500">Slot tersedia: 07:00-22:00 (1 jam per slot)</small>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block mb-2">Durasi</label>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="changeDuration(-1)" class="px-3 py-1 bg-gray-100 rounded">-</button>
+                        <input type="number" id="duration" value="1" min="1" max="4"
+                               class="w-20 text-center border rounded" readonly>
+                        <button type="button" onclick="changeDuration(1)" class="px-3 py-1 bg-gray-100 rounded">+</button>
+                        <span>Jam</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Step 2 - Konfirmasi & Bayar -->
-            <div id="step2" class="hidden space-y-6">
-                <div class="bg-gray-50 p-4 rounded-lg">
+            <!-- Step 2: Konfirmasi -->
+            <div id="step2" class="hidden">
+                <div class="mb-4">
                     <div class="flex justify-between mb-2">
                         <span>Lapangan:</span>
-                        <span class="font-semibold">Lapangan 1</span>
+                        <span id="confirmField">{{ $field->name }}</span>
                     </div>
                     <div class="flex justify-between mb-2">
                         <span>Tanggal:</span>
-                        <span class="font-semibold" id="confirmDate">-</span>
+                        <span id="confirmDate"></span>
                     </div>
                     <div class="flex justify-between mb-2">
                         <span>Waktu:</span>
-                        <span class="font-semibold" id="confirmTime">-</span>
+                        <span id="confirmTime"></span>
                     </div>
                     <div class="flex justify-between mb-2">
                         <span>Durasi:</span>
-                        <span class="font-semibold" id="confirmDuration">-</span>
+                        <span id="confirmDuration"></span>
                     </div>
-                    <hr class="my-3">
-                    <div class="flex justify-between text-lg font-bold">
+                    <div class="flex justify-between font-bold">
                         <span>Total:</span>
-                        <span id="totalPrice">Rp120,000</span>
+                        <span id="confirmPrice"></span>
                     </div>
                 </div>
 
-                <!-- Pilih Metode Pembayaran -->
-                <div>
-                    <h4 class="font-medium mb-4">Metode Pembayaran</h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-3 border rounded-lg cursor-pointer hover:border-green-500 payment-method">
-                            <div class="flex items-center">
-                                <i class='bx bx-credit-card text-xl mr-2'></i>
-                                Kartu Kredit
-                            </div>
-                        </div>
-                        <div class="p-3 border rounded-lg cursor-pointer hover:border-green-500 payment-method">
-                            <div class="flex items-center">
-                                <i class='bx bx-wallet text-xl mr-2'></i>
-                                E-Wallet
-                            </div>
-                        </div>
-                        <div class="p-3 border rounded-lg cursor-pointer hover:border-green-500 payment-method">
-                            <div class="flex items-center">
-                                <i class='bx bx-bank text-xl mr-2'></i>
-                                Transfer Bank
-                            </div>
-                        </div>
-                    </div>
+                <div class="mb-4">
+                    <label class="block mb-2">Metode Pembayaran</label>
+                    <select id="payment_method" class="w-full p-2 border rounded-lg" required>
+                        <option value="transfer">Transfer Bank</option>
+                        <option value="cash">Tunai di Tempat</option>
+                        <option value="e-wallet">E-Wallet</option>
+                    </select>
                 </div>
             </div>
 
             <!-- Navigation -->
-            <div class="flex justify-between mt-8">
-                <button onclick="previousStep()"
-                        id="prevBtn"
-                        class="hidden px-6 py-2 text-gray-600 hover:text-gray-800">
-                    <i class='bx bx-chevron-left mr-2'></i>Kembali
+            <div class="flex justify-between mt-4">
+                <button type="button" onclick="closeBookingModal()"
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+                    Batal
                 </button>
-                <button onclick="nextStep()"
-                        id="nextBtn"
-                        class="ml-auto bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
-                    Lanjut ke Pembayaran <i class='bx bx-chevron-right ml-2'></i>
-                </button>
-                <button id="confirmBtn"
-                        class="hidden ml-auto bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
-                    Konfirmasi Booking
-                </button>
+                <div class="flex gap-2">
+                    <button type="button" id="prevBtn" onclick="previousStep()"
+                            class="hidden px-4 py-2 bg-gray-200 rounded">
+                        Kembali
+                    </button>
+                    <button type="button" id="nextBtn" onclick="nextStep()"
+                            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                        Lanjut
+                    </button>
+                    <button type="submit" id="submitBtn"
+                            class="hidden px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                        Booking Sekarang
+                    </button>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
 <script>
-    let currentStep = 1;
-    let selectedTime = null;
-    let selectedPayment = null;
+let currentStep = 1;
+let selectedTime = null;
+let bookingData = {};
 
-    function openBookingModal() {
-        document.getElementById('bookingModal').classList.remove('hidden');
-        generateTimeSlots();
+function openBookingModal() {
+    document.getElementById('bookingModal').classList.remove('hidden');
+    loadAvailableTimes();
+}
+
+function closeBookingModal() {
+    document.getElementById('bookingModal').classList.add('hidden');
+    resetForm();
+}
+
+async function loadAvailableTimes() {
+    const date = document.getElementById('booking_date').value;
+    const fieldId = document.getElementById('field_id').value;
+
+    const response = await fetch(`/api/available-times/${fieldId}?date=${date}`);
+    const data = await response.json();
+
+    renderTimeSlots(data.available_slots);
+}
+
+function renderTimeSlots(slots) {
+    const container = document.getElementById('timeSlots');
+    container.innerHTML = '';
+
+    slots.forEach(slot => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'p-2 border rounded hover:bg-green-100';
+        button.textContent = slot;
+        button.onclick = () => selectTimeSlot(slot, button);
+        container.appendChild(button);
+    });
+}
+
+function selectTimeSlot(time, element) {
+    selectedTime = time;
+    document.querySelectorAll('#timeSlots button').forEach(btn => {
+        btn.classList.remove('bg-green-600', 'text-white');
+    });
+    element.classList.add('bg-green-600', 'text-white');
+}
+
+function changeDuration(change) {
+    const durationInput = document.getElementById('duration');
+    let duration = parseInt(durationInput.value) + change;
+    duration = Math.min(Math.max(duration, 1), 4);
+    durationInput.value = duration;
+}
+
+function nextStep() {
+    if(currentStep === 1) {
+        if(!validateStep1()) return;
+        updateConfirmationData();
+        currentStep++;
+        toggleSteps();
     }
+}
 
-    function closeBookingModal() {
-        document.getElementById('bookingModal').classList.add('hidden');
-        resetForm();
+function previousStep() {
+    currentStep--;
+    toggleSteps();
+}
+
+function toggleSteps() {
+    document.getElementById('step1').classList.toggle('hidden');
+    document.getElementById('step2').classList.toggle('hidden');
+    document.getElementById('prevBtn').classList.toggle('hidden');
+    document.getElementById('nextBtn').classList.toggle('hidden');
+    document.getElementById('submitBtn').classList.toggle('hidden');
+}
+
+function validateStep1() {
+    if(!selectedTime || !document.getElementById('booking_date').value) {
+        alert('Silakan pilih tanggal dan waktu terlebih dahulu');
+        return false;
     }
+    return true;
+}
 
-    function generateTimeSlots() {
-        const container = document.getElementById('timeSlots');
-        container.innerHTML = '';
+function updateConfirmationData() {
+    const duration = parseInt(document.getElementById('duration').value);
+    const price = duration * {{ $field->price_per_hour }};
 
-        // Contoh data dummy
-        const timeSlots = [
-            { time: '08:00', available: false },
-            { time: '09:00', available: true },
-            { time: '10:00', available: true },
-            // ... tambahkan lebih banyak slot
-        ];
+    document.getElementById('confirmDate').textContent =
+        document.getElementById('booking_date').value;
+    document.getElementById('confirmTime').textContent =
+        `${selectedTime} - ${calculateEndTime(selectedTime, duration)}`;
+    document.getElementById('confirmDuration').textContent = `${duration} Jam`;
+    document.getElementById('confirmPrice').textContent =
+        `Rp${price.toLocaleString('id-ID')}`;
 
-        timeSlots.forEach(slot => {
-            const div = document.createElement('div');
-            div.className = `p-2 text-center border rounded-lg cursor-pointer ${
-                slot.available ?
-                'bg-green-100 hover:bg-green-200' :
-                'bg-gray-100 cursor-not-allowed'
-            }`;
-            div.innerHTML = slot.time + (!slot.available ? ' <span class="text-xs text-red-500">(Booked)</span>' : '');
+    bookingData = {
+        field_id: {{ $field->id }},
+        booking_date: document.getElementById('booking_date').value,
+        start_time: selectedTime,
+        duration: duration,
+        total_price: price
+    };
+}
 
-            if(slot.available) {
-                div.addEventListener('click', () => {
-                    document.querySelectorAll('#timeSlots > div').forEach(el => {
-                        el.classList.remove('bg-green-300', 'border-green-500');
-                    });
-                    div.classList.add('bg-green-300', 'border-green-500');
-                    selectedTime = slot.time;
-                });
-            }
+function calculateEndTime(start, duration) {
+    const [hours, minutes] = start.split(':').map(Number);
+    const end = new Date();
+    end.setHours(hours + duration, minutes);
+    return end.toTimeString().substring(0,5);
+}
+// Tambahkan event listener untuk perubahan metode pembayaran
+document.getElementById('payment_method').addEventListener('change', function() {
+    const submitBtn = document.getElementById('submitBtn');
+    if(this.value === 'e-wallet') {
+        submitBtn.textContent = 'Lanjutkan Pembayaran';
+    } else {
+        submitBtn.textContent = 'Booking Sekarang';
+    }
+});
 
-            container.appendChild(div);
+async function submitBooking(e) {
+    e.preventDefault();
+
+    const formData = {
+        field_id: bookingData.field_id,
+        booking_date: bookingData.booking_date,
+        start_time: bookingData.start_time,
+        duration: bookingData.duration,
+        payment_method: document.getElementById('payment_method').value
+    };
+
+    try {
+        const response = await fetch('{{ route("user.bookings.store") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(formData)
         });
-    }
 
-    function updateSummary() {
-        document.getElementById('confirmDate').textContent =
-            document.getElementById('bookingDate').value;
+        const data = await response.json();
 
-        document.getElementById('confirmTime').textContent = selectedTime;
-
-        document.getElementById('confirmDuration').textContent =
-            document.getElementById('duration').value + ' Jam';
-
-        // Hitung total harga
-        const pricePerHour = 120000; // Ambil dari database
-        const total = pricePerHour * document.getElementById('duration').value;
-        document.getElementById('totalPrice').textContent =
-            'Rp' + total.toLocaleString('id-ID');
-    }
-
-    function nextStep() {
-        if(currentStep === 1) {
-            // Validasi step 1
-            if(!selectedTime || !document.getElementById('bookingDate').value) {
-                alert('Silakan pilih tanggal dan jam terlebih dahulu!');
-                return;
-            }
-
-            updateSummary();
-            document.getElementById('step1').classList.add('hidden');
-            document.getElementById('step2').classList.remove('hidden');
-            document.getElementById('prevBtn').classList.remove('hidden');
-            document.getElementById('nextBtn').classList.add('hidden');
-            document.getElementById('confirmBtn').classList.remove('hidden');
-            currentStep = 2;
-        }
-    }
-
-    function previousStep() {
-        if(currentStep === 2) {
-            document.getElementById('step1').classList.remove('hidden');
-            document.getElementById('step2').classList.add('hidden');
-            document.getElementById('prevBtn').classList.add('hidden');
-            document.getElementById('nextBtn').classList.remove('hidden');
-            document.getElementById('confirmBtn').classList.add('hidden');
-            currentStep = 1;
-        }
-    }
-
-    function resetForm() {
-        currentStep = 1;
-        selectedTime = null;
-        document.getElementById('step1').classList.remove('hidden');
-        document.getElementById('step2').classList.add('hidden');
-        document.getElementById('prevBtn').classList.add('hidden');
-        document.getElementById('nextBtn').classList.remove('hidden');
-        document.getElementById('confirmBtn').classList.add('hidden');
-    }
-
-    // Event Listeners
-    document.querySelectorAll('.payment-method').forEach(el => {
-        el.addEventListener('click', function() {
-            document.querySelectorAll('.payment-method').forEach(el => {
-                el.classList.remove('border-green-500', 'bg-green-50');
+        if (data.snap_token) {
+            // Buka popup Midtrans
+            window.snap.pay(data.snap_token, {
+                onSuccess: function(result) {
+                    window.location.href = '{{ route("user.callback") }}';
+                },
+                onPending: function(result) {
+                    window.location.href = '{{ route("user.callback") }}';
+                },
+                onError: function(result) {
+                    window.location.href = '{{ route("user.callback") }}';
+                }
             });
-            this.classList.add('border-green-500', 'bg-green-50');
-            selectedPayment = this.querySelector('div').textContent.trim();
-        });
-    });
+        } else {
+            Swal.fire('Success!', data.message, 'success');
+            closeBookingModal();
+        }
+    } catch (error) {
+        Swal.fire('Error!', 'Terjadi kesalahan sistem', 'error');
+    }
+}
 
-    // Update tombol booking di card lapangan
-    document.querySelectorAll('button:contains("Booking")').forEach(btn => {
-        btn.addEventListener('click', openBookingModal);
-    });
+function resetForm() {
+    currentStep = 1;
+    selectedTime = null;
+    bookingData = {};
+    document.getElementById('bookingForm').reset();
+    document.getElementById('step1').classList.remove('hidden');
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('prevBtn').classList.add('hidden');
+    document.getElementById('nextBtn').classList.remove('hidden');
+    document.getElementById('submitBtn').classList.add('hidden');
+}
+
+// Inisialisasi date picker
+document.getElementById('booking_date').addEventListener('change', loadAvailableTimes);
 </script>
 
+<!-- Di akhir file booking.blade.php -->
+<script type="text/javascript"
+        src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>

@@ -1,0 +1,12 @@
+/* Animasi timeline scroll */
+@keyframes scrollTimeline {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-100% + 100vw)); }
+}
+
+#scheduleTimeline {
+    animation: scrollTimeline 60s linear infinite;
+}
+#scheduleTimeline:hover {
+    animation-play-state: paused;
+}
