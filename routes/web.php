@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\FieldController;
 use \App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\ReportController;
 
 
 /*
@@ -29,6 +30,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/bookings/callback', [HomeController::class, 'callback'])->name('user.callback');
     Route::get('/bookings/{booking} ', [HomeController::class, 'showBooking'])->name('user.bookings.show');
     Route::get('/booking', [HomeController::class, 'indexBookings'])->name('user.bookings.index');
+    Route::get('/profil', [ProfileController::class, 'show'])->name('user.profil.show');
+    Route::get('/profil/edit', [ProfileController::class, 'edit'])->name('user.profil.edit');
+    Route::put('/profil/update', [ProfileController::class, 'update'])->name('update.profile');
+    Route::get('/pengaturan', [ProfileController::class, 'pengaturan'])->name('user.pengaturan');
 
     });
 
@@ -36,7 +41,7 @@ Route::middleware(['auth'])->group(function () {
         return view('user.lapangan-detail');
     });
 
-    Route::get('/profil', [ProfileController::class, 'show'])->name('user.profil.show');
+    
 
 
 
@@ -63,11 +68,19 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/bookings', [AdminController::class, 'bookings'])->name('admin.bookings');
         Route::post('/admin/bookings/{id}/accept', [AdminController::class, 'acceptBooking'])->name('admin.bookings.accept');
         Route::post('/admin/bookings/{id}/reject', [AdminController::class, 'rejectBooking'])->name('admin.bookings.reject');
+
+        Route::prefix('reports')->group(function () {
+            Route::get('/create', [ReportController::class, 'create'])->name('admin.reports.create');
+            Route::post('/', [ReportController::class, 'store'])->name('admin.reports.store');
+            Route::get('/', [ReportController::class, 'index'])->name('admin.reports.index');
+            Route::get('/{report}', [ReportController::class, 'show'])->name('admin.reports.show');
+            Route::delete('/{report}', [ReportController::class, 'destroy'])->name('admin.reports.destroy');
+        });
     });
 
 Auth::routes();
 
-Route::put('/profile', [ProfileController::class, 'update'])->name('update.profile');
+
 
 
 

@@ -11,7 +11,7 @@ class FieldController extends Controller
 {
     public function index()
     {
-        $fields = Field::paginate(10); // Ganti 10 dengan jumlah item per halaman yang diinginkan
+        $fields = Field::with('images')->get(); // Ganti 10 dengan jumlah item per halaman yang diinginkan
 
         // Ambil data untuk grafik
         $fieldPerformanceData = [

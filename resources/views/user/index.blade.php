@@ -5,7 +5,7 @@
 
 @section('content')
 
-    @extends('user.booking')
+@extends('user.booking')
 
 
 
@@ -50,20 +50,20 @@
                                     <h3 class="font-semibold">{{ $booking->field->name }}</h3>
                                     <p class="text-sm text-gray-600">{{ $booking->user->name }}</p>
                                 </div>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                                    {{ $booking->status }}
-                                </span>
                             </div>
                             <div class="text-sm">
                                 <i class='bx bx-time mr-1'></i>
                                 {{ date('H:i', strtotime($booking->start_time)) }} -
                                 {{ date('H:i', strtotime($booking->end_time)) }}
                             </div>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                                {{ $booking->status }}
+                            </span>
                         </div>
                     @endforeach
                 </div>
             </div>
-
+        
             <div class="text-center mt-4">
                 <div class="inline-flex items-center text-green-600">
                     <i class='bx bx-refresh bx-spin mr-2'></i>
@@ -71,46 +71,47 @@
                 </div>
             </div>
         </div>
+
         <!-- Existing Fields Grid -->
         <!-- ... (kode sebelumnya tetap sama) ... -->
     </div>
     <script>
         // Fungsi untuk update jadwal real-time
         function updateSchedule() {
-            fetch('/api/current-bookings')
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('scheduleTimeline');
-                    container.innerHTML = '';
+    fetch('/api/current-bookings')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('scheduleTimeline');
+            container.innerHTML = '';
 
-                    data.forEach(booking => {
-                        const bookingElement = `
-                            <div class="flex-shrink-0 w-64 bg-green-50 rounded-lg p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h3 class="font-semibold">${booking.field.name}</h3>
-                                        <p class="text-sm text-gray-600">${booking.user.name}</p>
-                                    </div>
-                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                                        ${booking.status}
-                                    </span>
-                                </div>
-                                <div class="text-sm">
-                                    <i class='bx bx-time mr-1'></i>
-                                    ${booking.start_time} - ${booking.end_time}
-                                </div>
+            data.forEach(booking => {
+                const bookingElement = `
+                    <div class="flex-shrink-0 w-64 bg-green-50 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">${booking.field.name}</h3>
+                                <p class="text-sm text-gray-600">${booking.user.name}</p>
                             </div>
-                        `;
-                        container.insertAdjacentHTML('beforeend', bookingElement);
-                    });
-                });
-        }
+                        </div>
+                        <div class="text-sm">
+                            <i class='bx bx-time mr-1'></i>
+                            ${booking.start_time} - ${booking.end_time}
+                        </div>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                            ${booking.status}
+                        </span>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', bookingElement);
+            });
+        });
+}
 
-        // Update setiap 30 detik
-        setInterval(updateSchedule, 30000);
+// Update setiap 30 detik
+setInterval(updateSchedule, 30000);
 
-        // Pertama kali load
-        document.addEventListener('DOMContentLoaded', updateSchedule);
+// Pertama kali load
+document.addEventListener('DOMContentLoaded', updateSchedule);
         </script>
 
     <!-- Daftar Lapangan -->
@@ -120,8 +121,12 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($fields as $field)
                 <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition">
-                    <img src="https://source.unsplash.com/random/800x600?futsal" alt="Lapangan"
-                        class="h-48 w-full object-cover">
+                    @if($field->images && $field->images->isNotEmpty())
+                    {{ dd($field->images) }}
+                    <img src="/storage/{{ $field->images->first()->image_path }}" alt="Lapangan" class="h-48 w-full object-cover">
+                    @else
+                        <img src="https://source.unsplash.com/random/800x600?futsal" alt="Lapangan" class="h-48 w-full object-cover">
+                    @endif
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-4">
                             <h3 class="text-xl font-bold">{{ $field->name }}</h3>

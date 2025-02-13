@@ -31,7 +31,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-
+        $fields = Field::all();
         $fields = Field::where('is_available', true)->get();
 
         $currentBookings = Booking::with(['field', 'user'])
@@ -43,8 +43,21 @@ class HomeController extends Controller
         ->orderBy('start_time')
         ->get();
         return view('user.index', compact('fields','currentBookings'));
-
+        
     }
+    public function getCurrentBookings()
+{
+    $currentBookings = Booking::with(['field', 'user'])
+        ->whereDate('booking_date', now()->toDateString())
+        ->where(function($query) {
+            $query->whereTime('end_time', '>=', now()->toTimeString())
+                ->orWhere('status', 'active');
+        })
+        ->orderBy('start_time')
+        ->get();
+
+    return response()->json($currentBookings);
+}
 
     public function store(Request $request)
 {
@@ -109,7 +122,8 @@ class HomeController extends Controller
                 'expiry' => [
                     'duration' => 2,
                     'unit' => 'hour'
-                ]
+                ],
+                'recurring' => true // Tambahkan ini untuk recurring payment
             ];
 
             // Dapatkan Snap Token
@@ -136,6 +150,11 @@ class HomeController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Midtrans Payment Error:', [
+                'error' => $e->getMessage(),
+                'booking_id' => $booking->id,
+                'user_id' => Auth::id()
+            ]);
             $booking->delete();
             return response()->json([
                 'success' => false,
@@ -155,9 +174,11 @@ public function handleNotification(Request $request)
     $payload = $request->getContent();
     $data = json_decode($payload, true);
 
-    Log::info('Midtrans Notification Received:', [
+    Log::info('Midtrans Transaction Status:', [
         'order_id' => $data['order_id'],
         'status' => $data['transaction_status'],
+        'payment_type' => $data['payment_type'],
+        'fraud_status' => $data['fraud_status'],
         'payload' => $data
     ]);
 
@@ -165,6 +186,10 @@ public function handleNotification(Request $request)
     $signature = hash('sha512', $payload . $serverKey);
 
     if ($signature !== $request->header('X-Signature')) {
+        Log::error('Invalid Midtrans Signature:', [
+            'received_signature' => $request->header('X-Signature'),
+            'computed_signature' => $signature
+        ]);
         return response()->json(['status' => 'Invalid signature'], 403);
     }
 
@@ -189,17 +214,23 @@ public function handleNotification(Request $request)
             ]);
             break;
 
-        case 'expire':
-            $booking->update(['status' => 'canceled']);
-            $payment->update(['status' => 'expired']);
-            break;
+            case 'expire':
+                $booking->update(['status' => 'canceled']);
+                $payment->update(['status' => 'expired']);
+                // Kirim notifikasi ke user
+                $user = $booking->user;
+                $user->notify(new PaymentExpiredNotification($booking));
+                break;
 
         case 'cancel':
             $booking->update(['status' => 'canceled']);
             $payment->update(['status' => 'canceled']);
             break;
 
-
+        case 'chargeback':
+            $booking->update(['status' => 'canceled']);
+            $payment->update(['status' => 'chargeback']);
+            break;
 
         case 'success':
             $booking->update(['status' => 'confirmed']);
@@ -244,5 +275,33 @@ public function indexBookings()
         ->paginate(10);
 
     return view('user.riwayat', compact('bookings'));
+}
+
+public function refundBooking(Booking $booking)
+{
+    try {
+        // Setup Midtrans
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        // Parameter refund
+        $params = [
+            'refund_key' => 'refund-' . time(),
+            'amount' => $booking->total_price,
+            'reason' => 'Booking cancellation'
+        ];
+
+        // Proses refund melalui Midtrans
+        $refund = \Midtrans\Transaction::refund($booking->payment->transaction_id, $params);
+
+        // Update status pembayaran
+        $booking->payment->update(['status' => 'refunded']);
+
+        return response()->json(['success' => true, 'message' => 'Refund processed successfully']);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
 }
 }

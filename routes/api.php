@@ -19,6 +19,7 @@ use App\Models\Field;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::get('/current-bookings', [HomeController::class, 'getCurrentBookings']);
 
 Route::get('/current-bookings', function() {
     $bookings = Booking::with(['field', 'user'])

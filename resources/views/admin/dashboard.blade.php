@@ -13,8 +13,8 @@
                 <div class="hologram-effect p-4 rounded-xl">
                     <div class="flex justify-between items-center">
                         <div>
-                            <div class="text-2xl font-bold">24</div>
-                            <div class="text-sm text-green-400">Active Bookings</div>
+                            <div class="text-2xl font-bold">{{ $totalBookings }}</div>
+                            <div class="text-sm text-green-400">Total Bookings</div>
                         </div>
                         <i class='bx bx-calendar-event text-3xl text-green-400'></i>
                     </div>
@@ -26,7 +26,7 @@
                 <div class="hologram-effect p-4 rounded-xl">
                     <div class="flex justify-between items-center">
                         <div>
-                            <div class="text-2xl font-bold">₿12.4K</div>
+                            <div class="text-2xl font-bold">Rp{{ number_format($todayRevenue, 0, ',', '.') }}</div>
                             <div class="text-sm text-green-400">Today's Revenue</div>
                         </div>
                         <i class='bx bx-credit-card text-3xl text-green-400'></i>
@@ -39,7 +39,7 @@
                 <div class="hologram-effect p-4 rounded-xl">
                     <div class="flex justify-between items-center">
                         <div>
-                            <div class="text-2xl font-bold">156</div>
+                            <div class="text-2xl font-bold">{{ $activeUsers }}</div>
                             <div class="text-sm text-green-400">Active Users</div>
                         </div>
                         <i class='bx bx-user-check text-3xl text-green-400'></i>
@@ -52,7 +52,7 @@
                 <div class="hologram-effect p-4 rounded-xl">
                     <div class="flex justify-between items-center">
                         <div>
-                            <div class="text-2xl font-bold">82%</div>
+                            <div class="text-2xl font-bold">{{ $fieldOccupancy }}%</div>
                             <div class="text-sm text-green-400">Field Occupancy</div>
                         </div>
                         <i class='bx bx-trending-up text-3xl text-green-400'></i>
@@ -83,24 +83,28 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @foreach($recentBookings as $booking)
                                 <tr class="border-b border-gray-700 hover:bg-gray-800">
-                                    <td class="p-3">#FUT234</td>
-                                    <td class="p-3">John Doe</td>
-                                    <td class="p-3">Field 1</td>
-                                    <td class="p-3">19:00-21:00</td>
+                                    <td class="p-3">{{ $booking->booking_code }}</td>
+                                    <td class="p-3">{{ $booking->user->name }}</td>
+                                    <td class="p-3">{{ $booking->field->name }}</td>
+                                    <td class="p-3">{{ date('H:i', strtotime($booking->start_time)) }} - {{ date('H:i', strtotime($booking->end_time)) }}</td>
                                     <td class="p-3">
-                                        <span class="px-2 py-1 rounded-full bg-green-900 text-green-400 text-sm">
-                                            Confirmed
+                                        <span class="px-2 py-1 rounded-full
+                                            @if($booking->status == 'confirmed') bg-green-900 text-green-400
+                                            @elseif($booking->status == 'pending') bg-yellow-900 text-yellow-400
+                                            @else bg-red-900 text-red-400 @endif text-sm">
+                                            {{ ucfirst($booking->status) }}
                                         </span>
                                     </td>
                                 </tr>
-                                <!-- More rows -->
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
-                    <button class="w-full mt-4 p-2 bg-green-600 hover:bg-green-700 rounded-lg">
+                    <a href="{{ route('admin.bookings.index') }}" class="w-full mt-4 p-2 bg-green-600 hover:bg-green-700 rounded-lg text-center block">
                         View All Bookings
-                    </button>
+                    </a>
                 </div>
 
                 <!-- Quick Actions -->
@@ -110,22 +114,22 @@
                         Quick Actions
                     </h3>
                     <div class="grid grid-cols-2 gap-3">
-                        <button class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
+                        <a href="{{ route('admin.fields.create') }}" class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
                             <i class='bx bx-plus text-2xl mb-2'></i>
                             <span class="text-sm">Add New Field</span>
-                        </button>
-                        <button class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
+                        </a>
+                        <a href="{{ route('admin.reports.create') }}" class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
                             <i class='bx bx-file text-2xl mb-2'></i>
                             <span class="text-sm">Generate Report</span>
-                        </button>
-                        <button class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
+                        </a>
+                        <a href="" class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
                             <i class='bx bx-user-plus text-2xl mb-2'></i>
                             <span class="text-sm">Manage Users</span>
-                        </button>
-                        <button class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
+                        </a>
+                        <a href="" class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
                             <i class='bx bx-money text-2xl mb-2'></i>
                             <span class="text-sm">View Payments</span>
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -149,6 +153,7 @@
                 </div>
             </div>
         </main>
+
     </div>
 </div>
 
@@ -158,10 +163,10 @@
     new Chart(bookingCtx, {
         type: 'line',
         data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            labels: {!! json_encode($bookingTrends['labels']) !!},
             datasets: [{
                 label: 'Bookings',
-                data: [12, 19, 3, 5, 2, 3],
+                data: {!! json_encode($bookingTrends['data']) !!},
                 borderColor: '#10B981',
                 tension: 0.4,
                 fill: false
@@ -184,10 +189,10 @@
     new Chart(fieldCtx, {
         type: 'bar',
         data: {
-            labels: ['Field 1', 'Field 2', 'Field 3'],
+            labels: {!! json_encode($fieldPerformanceData['labels']) !!},
             datasets: [{
                 label: 'Occupancy Rate',
-                data: [65, 59, 80],
+                data: {!! json_encode($fieldPerformanceData['data']) !!},
                 backgroundColor: '#10B981',
                 borderRadius: 4
             }]

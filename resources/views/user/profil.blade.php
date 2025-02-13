@@ -2,7 +2,6 @@
 
 @section('title','Profil')
 
-
 @section('content')
     <!-- Profile Header -->
     <div class="pt-20 pb-16 bg-gradient-to-r from-green-600 to-green-800">
@@ -22,12 +21,14 @@
                     </div>
                 </div>
                 <div class="flex space-x-4">
-                    <button class="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-white hover:bg-white/30 transition">
+                    <a href="{{ route('user.profil.edit') }}" 
+                        class="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-white hover:bg-white/30 transition">
                         <i class='bx bx-edit mr-2'></i>Edit Profil
-                    </button>
-                    <button class="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-white hover:bg-white/30 transition">
-                        <i class='bx bx-cog mr-2'></i>Pengaturan
-                    </button>
+                    </a>
+                    <a href="{{ route('user.pengaturan') }}" 
+                        class="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-white hover:bg-white/30 transition">
+                        <i class='bx bx-edit mr-2'></i>Pengaturan
+                    </a>
                 </div>
             </div>
         </div>
@@ -37,14 +38,26 @@
     <div class="max-w-7xl mx-auto px-4 py-8">
         <h2 class="text-2xl font-bold mb-6">Profil Anda</h2>
 
-        <form method="POST" action="{{ route('update.profile') }}">
+        <form method="POST" action="">
             @csrf
             @method('PUT')
 
             <div class="mb-4">
                 <label for="address" class="block text-gray-600 mb-1">Alamat</label>
-                <input id="address" type="text" class="form-control @error('address') is-invalid @enderror" name="address" value="{{ old('address', Auth::user()->address) }}" required>
+                <input id="address" type="text" class="form-control @error('address') is-invalid @enderror" 
+                       name="address" value="{{ old('address', $user->address) }}" required>
                 @error('address')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+
+            <div class="mb-4">
+                <label for="phone_number" class="block text-gray-600 mb-1">Nomor Telepon</label>
+                <input id="phone_number" type="text" class="form-control @error('phone_number') is-invalid @enderror" 
+                       name="phone_number" value="{{ old('phone_number', $user->phone_number) }}" required>
+                @error('phone_number')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
                     </span>
@@ -78,7 +91,7 @@
                         </div>
                         <div>
                             <label class="block text-gray-600 mb-1">Bergabung Pada</label>
-                            <p class="font-medium">{{ $user->created_at }}</p>
+                            <p class="font-medium">{{ $user->created_at->format('d M Y') }}</p>
                         </div>
                     </div>
                 </div>
@@ -89,7 +102,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm">Total Booking</p>
-                                <p class="text-3xl font-bold">24</p>
+                                <p class="text-3xl font-bold">{{ $user->bookings->count() }}</p>
                             </div>
                             <i class='bx bx-calendar-check text-4xl opacity-75'></i>
                         </div>
@@ -98,7 +111,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm">Member Aktif</p>
-                                <p class="text-3xl font-bold">2 Tahun</p>
+                                <p class="text-3xl font-bold">{{ now()->diffInYears($user->created_at) }} Tahun</p>
                             </div>
                             <i class='bx bx-time-five text-4xl opacity-75'></i>
                         </div>
@@ -127,7 +140,7 @@
                         <div class="flex justify-between items-center">
                             <span>Verifikasi Email</span>
                             <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                                Terverifikasi
+                                {{ $user->email_verified_at ? 'Terverifikasi' : 'Belum Terverifikasi' }}
                             </span>
                         </div>
                         <div class="flex justify-between items-center">
@@ -145,35 +158,9 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Booking Terbaru -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center">
-                        <i class='bx bx-history mr-2 text-green-600'></i>
-                        Booking Terbaru
-                    </h2>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div>
-                                <p class="font-medium">Lapangan 1</p>
-                                <p class="text-sm text-gray-600">20 Jun 2024 • 19:00-21:00</p>
-                            </div>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                                Aktif
-                            </span>
-                        </div>
-
-                        <div class="text-center py-8 text-gray-500">
-                            <i class='bx bx-calendar-exclamation text-4xl mb-4'></i>
-                            <p>Tidak ada booking aktif</p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
-
-    <!-- Footer (Sama seperti sebelumnya) -->
 
     <style>
         .toggle-checkbox:checked {
@@ -184,5 +171,4 @@
             background-color: #059669;
         }
     </style>
-
 @endsection
