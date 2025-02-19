@@ -35,6 +35,84 @@
         </div>
     </div>
 
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <h2 class="text-3xl font-bold mb-8 text-center">Jadwal Booking</h2>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 font-semibold">
+                <div>Lapangan</div>
+                <div>Pemesan</div>
+                <div>Waktu</div>
+                <div>Status</div>
+                <div>Tipe</div>
+            </div>
+
+            <div id="real-time-schedule">
+                <div class="text-center py-4 text-gray-500">Memuat data...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fetchRealTimeSchedule() {
+            fetch('/api/real-time-schedule')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('real-time-schedule');
+                    if (data.length > 0) {
+                        container.innerHTML = data.map(booking => `
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 py-2 border-b last:border-b-0">
+                                <div>${booking.field_name}</div>
+                                <div>${booking.user_name}</div>
+                                <div>${booking.start_time} - ${booking.end_time}</div>
+                                <div class="capitalize">
+                                    <span class="px-2 py-1 rounded-full text-sm 
+                                        ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-red-100 text-red-800'}">
+                                        ${booking.status}
+                                    </span>
+                                </div>
+                                <div class="capitalize">
+                                    <span class="px-2 py-1 rounded-full text-sm 
+                                        ${booking.type === 'ongoing' ? 'bg-blue-100 text-blue-800' :
+                                        'bg-purple-100 text-purple-800'}">
+                                        ${booking.type === 'ongoing' ? 'Sedang Berjalan' : 'Akan Datang'}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML =
+                            '<div class="text-center py-4 text-gray-500">Tidak ada jadwal saat ini</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Fetch data pertama kali
+        fetchRealTimeSchedule();
+
+        // Update data setiap 1 menit
+        setInterval(fetchRealTimeSchedule, 60000);
+    </script>
+
+    <style>
+        #real-time-schedule {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        #real-time-schedule>div {
+            transition: background-color 0.3s ease;
+        }
+
+        #real-time-schedule>div:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
 
 
     <!-- Daftar Lapangan -->
@@ -67,7 +145,7 @@
                             <span
                                 class="text-2xl font-bold text-green-600">Rp{{ number_format($field->price_per_hour, 0, ',', '.') }}/jam</span>
                             <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-                                onclick="openBookingModal()">
+                                onclick="openBookingModal({{ $field->id }})">
                                 Booking
                             </button>
                         </div>
@@ -112,76 +190,5 @@
     </div>
 
     <!-- Real-time Schedule Section -->
-    <div class="max-w-7xl mx-auto px-4 py-12">
-        <h2 class="text-3xl font-bold mb-8 text-center">Jadwal Real-time</h2>
-
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 font-semibold">
-                <div>Lapangan</div>
-                <div>Pemesan</div>
-                <div>Waktu</div>
-                <div>Status</div>
-            </div>
-
-            <div id="real-time-schedule">
-                <!-- Data akan diisi oleh JavaScript -->
-                <div class="text-center py-4 text-gray-500">Memuat data...</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function fetchRealTimeSchedule() {
-            fetch('/api/real-time-schedule')
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('real-time-schedule');
-                    if (data.length > 0) {
-                        container.innerHTML = data.map(booking => `
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 py-2 border-b last:border-b-0">
-                                <div>${booking.field_name}</div>
-                                <div>${booking.user_name}</div>
-                                <div>${booking.start_time} - ${booking.end_time}</div>
-                                <div class="capitalize">
-                                    <span class="px-2 py-1 rounded-full text-sm 
-                                        ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-red-100 text-red-800'}">
-                                        ${booking.status}
-                                    </span>
-                                </div>
-                            </div>
-                        `).join('');
-                    } else {
-                        container.innerHTML =
-                            '<div class="text-center py-4 text-gray-500">Tidak ada jadwal saat ini</div>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-
-        // Fetch data pertama kali
-        fetchRealTimeSchedule();
-
-        // Update data setiap 1 menit
-        setInterval(fetchRealTimeSchedule, 60000);
-    </script>
-
-    <style>
-        #real-time-schedule {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        #real-time-schedule>div {
-            transition: background-color 0.3s ease;
-        }
-
-        #real-time-schedule>div:hover {
-            background-color: #f3f4f6;
-        }
-    </style>
-
+ 
 @endsection

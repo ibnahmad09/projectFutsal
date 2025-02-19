@@ -43,9 +43,10 @@ Route::get('/current-bookings', function() {
 Route::get('/available-times/{field}', function (Field $field) {
     $date = request('date');
 
+    // Get booked slots only for this specific field
     $bookedSlots = Booking::where('field_id', $field->id)
         ->whereDate('booking_date', $date)
-        ->where('status', '!=', 'canceled') // Hanya ambil booking yang tidak cancelled
+        ->where('status', '!=', 'canceled')
         ->get()
         ->flatMap(function ($booking) {
             return Carbon\CarbonPeriod::create(
@@ -56,6 +57,7 @@ Route::get('/available-times/{field}', function (Field $field) {
         })
         ->map(fn($time) => $time->format('H:i'));
 
+    // Generate all possible slots based on this field's opening hours
     $allSlots = [];
     $current = Carbon\Carbon::parse($field->open_time);
     $endTime = Carbon\Carbon::parse($field->close_time);
@@ -65,9 +67,11 @@ Route::get('/available-times/{field}', function (Field $field) {
         $current->addHour();
     }
 
+    // Calculate available slots by removing booked slots
     $availableSlots = array_diff($allSlots, $bookedSlots->toArray());
 
     return response()->json([
+        'field_id' => $field->id,
         'available_slots' => array_values($availableSlots)
     ]);
 });
@@ -87,9 +91,27 @@ Route::get('/real-time-schedule', function() {
                 'user_name' => $booking->user->name,
                 'start_time' => $booking->start_time,
                 'end_time' => $booking->end_time,
-                'status' => $booking->status
+                'status' => $booking->status,
+                'type' => 'ongoing'
             ];
         });
 
-    return response()->json($bookings);
+    $upcomingBookings = \App\Models\Booking::with(['field', 'user'])
+        ->whereDate('booking_date', '>', now()->toDateString())
+        ->where('status', 'confirmed')
+        ->orderBy('booking_date')
+        ->orderBy('start_time')
+        ->get()
+        ->map(function($booking) {
+            return [
+                'field_name' => $booking->field->name,
+                'user_name' => $booking->user->name,
+                'start_time' => $booking->start_time,
+                'end_time' => $booking->end_time,
+                'status' => $booking->status,
+                'type' => 'upcoming'
+            ];
+        });
+
+    return response()->json([...$bookings, ...$upcomingBookings]);
 });

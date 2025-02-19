@@ -108,7 +108,8 @@ let currentStep = 1;
 let selectedTime = null;
 let bookingData = {};
 
-function openBookingModal() {
+function openBookingModal(fieldId) {
+    document.getElementById('field_id').value = fieldId;
     document.getElementById('bookingModal').classList.remove('hidden');
     loadAvailableTimes();
 }
@@ -122,11 +123,24 @@ async function loadAvailableTimes() {
     const date = document.getElementById('booking_date').value;
     const fieldId = document.getElementById('field_id').value;
 
+    console.log('Loading times for field:', fieldId); // Tambahkan ini untuk debugging
+
+    if (!fieldId || !date) return;
+
     const response = await fetch(`/api/available-times/${fieldId}?date=${date}`);
     const data = await response.json();
 
-    renderTimeSlots(data.available_slots);
+    if (data.field_id == fieldId) {
+        renderTimeSlots(data.available_slots);
+    }
 }
+
+// Tambahkan event listener untuk perubahan field_id
+document.getElementById('field_id').addEventListener('change', function() {
+    if (document.getElementById('booking_date').value) {
+        loadAvailableTimes();
+    }
+});
 
 function renderTimeSlots(slots) {
     const container = document.getElementById('timeSlots');
