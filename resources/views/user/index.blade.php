@@ -5,7 +5,7 @@
 
 @section('content')
 
-@extends('user.booking')
+    @extends('user.booking')
 
 
 
@@ -63,7 +63,7 @@
                     @endforeach
                 </div>
             </div>
-        
+
             <div class="text-center mt-4">
                 <div class="inline-flex items-center text-green-600">
                     <i class='bx bx-refresh bx-spin mr-2'></i>
@@ -78,14 +78,14 @@
     <script>
         // Fungsi untuk update jadwal real-time
         function updateSchedule() {
-    fetch('/api/current-bookings')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('scheduleTimeline');
-            container.innerHTML = '';
+            fetch('/api/current-bookings')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('scheduleTimeline');
+                    container.innerHTML = '';
 
-            data.forEach(booking => {
-                const bookingElement = `
+                    data.forEach(booking => {
+                        const bookingElement = `
                     <div class="flex-shrink-0 w-64 bg-green-50 rounded-lg p-4">
                         <div class="flex justify-between items-start mb-2">
                             <div>
@@ -102,17 +102,17 @@
                         </span>
                     </div>
                 `;
-                container.insertAdjacentHTML('beforeend', bookingElement);
-            });
-        });
-}
+                        container.insertAdjacentHTML('beforeend', bookingElement);
+                    });
+                });
+        }
 
-// Update setiap 30 detik
-setInterval(updateSchedule, 30000);
+        // Update setiap 30 detik
+        setInterval(updateSchedule, 30000);
 
-// Pertama kali load
-document.addEventListener('DOMContentLoaded', updateSchedule);
-        </script>
+        // Pertama kali load
+        document.addEventListener('DOMContentLoaded', updateSchedule);
+    </script>
 
     <!-- Daftar Lapangan -->
     <div class="max-w-7xl mx-auto px-4 py-12">
@@ -121,11 +121,12 @@ document.addEventListener('DOMContentLoaded', updateSchedule);
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($fields as $field)
                 <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition">
-                    @if($field->images && $field->images->isNotEmpty())
-                    {{ dd($field->images) }}
-                    <img src="/storage/{{ $field->images->first()->image_path }}" alt="Lapangan" class="h-48 w-full object-cover">
+                    @if ($field->images && $field->images->isNotEmpty())
+                        <img src="{{ asset('storage/' . $field->images->first()->image_path) }}" alt="Lapangan"
+                            class="h-48 w-full object-cover">
                     @else
-                        <img src="https://source.unsplash.com/random/800x600?futsal" alt="Lapangan" class="h-48 w-full object-cover">
+                        <img src="https://source.unsplash.com/random/800x600?futsal" alt="Lapangan"
+                            class="h-48 w-full object-cover">
                     @endif
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-4">

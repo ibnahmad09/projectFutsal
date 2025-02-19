@@ -28,7 +28,7 @@ class Field extends Model
     ];
 
     // Relasi ke FieldImages
-    public function fieldImages()
+    public function images()
     {
         return $this->hasMany(FieldImage::class);
     }

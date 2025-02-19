@@ -76,6 +76,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{report}', [ReportController::class, 'show'])->name('admin.reports.show');
             Route::delete('/{report}', [ReportController::class, 'destroy'])->name('admin.reports.destroy');
         });
+
+        
     });
 
 Auth::routes();

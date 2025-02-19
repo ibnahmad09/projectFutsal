@@ -78,7 +78,7 @@
 
             <div class="mb-4 relative">
                 @if($field->images && $field->images->count() > 0)
-                <img src="{{ asset('storage/field_images/'.$field->images->first()->image_path) }}"
+                <img src="{{ asset('storage/'.$field->images->first()->image_path) }}"
                      class="w-full h-48 object-cover rounded-lg">
                 @else
                 <div class="w-full h-48 bg-gray-800 rounded-lg flex items-center justify-center">

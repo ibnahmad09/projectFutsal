@@ -11,7 +11,7 @@ class FieldController extends Controller
 {
     public function index()
     {
-        $fields = Field::with('images')->get(); // Ganti 10 dengan jumlah item per halaman yang diinginkan
+     $fields = Field::with('images')->paginate(10); // Ganti 10 dengan jumlah item per halaman yang diinginkan
 
         // Ambil data untuk grafik
         $fieldPerformanceData = [
@@ -92,6 +92,8 @@ class FieldController extends Controller
             'facilities' => 'sometimes|array',
             'facilities.*' => 'string|max:50',
             'status' => 'required|in:available,maintenance',
+            'images' => 'sometimes|array|max:5',
+           'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         // Convert facilities to JSON
@@ -99,6 +101,20 @@ class FieldController extends Controller
 
         // Update data field
         $field->update($validated);
+         // Handle new image upload
+          if ($request->hasFile('images')) {
+        // Delete existing images (optional)
+        // $field->images()->delete();
+
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('field_images', 'public');
+
+                FieldImage::create([
+                    'field_id' => $field->id,
+                    'image_path' => $path
+                ]);
+            }
+        }
 
         return redirect()->route('admin.fields.index')->with('success', 'Lapangan berhasil diperbarui.');
     }
