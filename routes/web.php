@@ -55,19 +55,19 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/fields/{field}', [FieldController::class, 'destroy'])->name('admin.fields.destroy');
 
         Route::resource('bookings', BookingController::class)
-        ->except(['show'])
         ->names([
             'index' => 'admin.bookings.index',
             'create' => 'admin.bookings.create',
             'store' => 'admin.bookings.store',
+            'show' => 'admin.bookings.show',
             'edit' => 'admin.bookings.edit',
             'update' => 'admin.bookings.update',
             'destroy' => 'admin.bookings.destroy'
         ]);
-
-        Route::get('/admin/bookings', [AdminController::class, 'bookings'])->name('admin.bookings');
-        Route::post('/admin/bookings/{id}/accept', [AdminController::class, 'acceptBooking'])->name('admin.bookings.accept');
-        Route::post('/admin/bookings/{id}/reject', [AdminController::class, 'rejectBooking'])->name('admin.bookings.reject');
+  
+        Route::post('/bookings/{id}/accept', [AdminController::class, 'acceptBooking'])->name('admin.bookings.accept');
+        Route::post('/bookings/{id}/reject', [AdminController::class, 'rejectBooking'])->name('admin.bookings.reject');
+       
 
         Route::prefix('reports')->group(function () {
             Route::get('/create', [ReportController::class, 'create'])->name('admin.reports.create');

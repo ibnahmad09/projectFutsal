@@ -17,7 +17,6 @@ class LapanganController extends Controller
 
     public function store(Request $request)
     {
-
         $request->validate([
             'field_id' => 'required|exists:fields,id',
             'booking_date' => [

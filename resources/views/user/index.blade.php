@@ -35,84 +35,7 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-8">
-        <!-- Live Schedule Section -->
-        <div class="mb-12 bg-white rounded-xl shadow-md p-6">
-            <h2 class="text-2xl font-bold mb-4">Jadwal Penyewaan Hari Ini</h2>
 
-            <!-- Timeline Container -->
-            <div class="relative overflow-x-auto pb-4">
-                <div class="flex space-x-4" id="scheduleTimeline">
-                    @foreach ($currentBookings as $booking)
-                        <div class="flex-shrink-0 w-64 bg-green-50 rounded-lg p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <h3 class="font-semibold">{{ $booking->field->name }}</h3>
-                                    <p class="text-sm text-gray-600">{{ $booking->user->name }}</p>
-                                </div>
-                            </div>
-                            <div class="text-sm">
-                                <i class='bx bx-time mr-1'></i>
-                                {{ date('H:i', strtotime($booking->start_time)) }} -
-                                {{ date('H:i', strtotime($booking->end_time)) }}
-                            </div>
-                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                                {{ $booking->status }}
-                            </span>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="text-center mt-4">
-                <div class="inline-flex items-center text-green-600">
-                    <i class='bx bx-refresh bx-spin mr-2'></i>
-                    <span>Update Real-time</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Existing Fields Grid -->
-        <!-- ... (kode sebelumnya tetap sama) ... -->
-    </div>
-    <script>
-        // Fungsi untuk update jadwal real-time
-        function updateSchedule() {
-            fetch('/api/current-bookings')
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('scheduleTimeline');
-                    container.innerHTML = '';
-
-                    data.forEach(booking => {
-                        const bookingElement = `
-                    <div class="flex-shrink-0 w-64 bg-green-50 rounded-lg p-4">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 class="font-semibold">${booking.field.name}</h3>
-                                <p class="text-sm text-gray-600">${booking.user.name}</p>
-                            </div>
-                        </div>
-                        <div class="text-sm">
-                            <i class='bx bx-time mr-1'></i>
-                            ${booking.start_time} - ${booking.end_time}
-                        </div>
-                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                            ${booking.status}
-                        </span>
-                    </div>
-                `;
-                        container.insertAdjacentHTML('beforeend', bookingElement);
-                    });
-                });
-        }
-
-        // Update setiap 30 detik
-        setInterval(updateSchedule, 30000);
-
-        // Pertama kali load
-        document.addEventListener('DOMContentLoaded', updateSchedule);
-    </script>
 
     <!-- Daftar Lapangan -->
     <div class="max-w-7xl mx-auto px-4 py-12">
@@ -187,5 +110,78 @@
             </div>
         </div>
     </div>
+
+    <!-- Real-time Schedule Section -->
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <h2 class="text-3xl font-bold mb-8 text-center">Jadwal Real-time</h2>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 font-semibold">
+                <div>Lapangan</div>
+                <div>Pemesan</div>
+                <div>Waktu</div>
+                <div>Status</div>
+            </div>
+
+            <div id="real-time-schedule">
+                <!-- Data akan diisi oleh JavaScript -->
+                <div class="text-center py-4 text-gray-500">Memuat data...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fetchRealTimeSchedule() {
+            fetch('/api/real-time-schedule')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('real-time-schedule');
+                    if (data.length > 0) {
+                        container.innerHTML = data.map(booking => `
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 py-2 border-b last:border-b-0">
+                                <div>${booking.field_name}</div>
+                                <div>${booking.user_name}</div>
+                                <div>${booking.start_time} - ${booking.end_time}</div>
+                                <div class="capitalize">
+                                    <span class="px-2 py-1 rounded-full text-sm 
+                                        ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-red-100 text-red-800'}">
+                                        ${booking.status}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML =
+                            '<div class="text-center py-4 text-gray-500">Tidak ada jadwal saat ini</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Fetch data pertama kali
+        fetchRealTimeSchedule();
+
+        // Update data setiap 1 menit
+        setInterval(fetchRealTimeSchedule, 60000);
+    </script>
+
+    <style>
+        #real-time-schedule {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        #real-time-schedule>div {
+            transition: background-color 0.3s ease;
+        }
+
+        #real-time-schedule>div:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
 
 @endsection

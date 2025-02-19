@@ -53,24 +53,28 @@ class Booking extends Model
     }
 
     public static function isTimeValid($fieldId, $bookingDate, $startTime, $endTime)
-{
-    return !Booking::where('field_id', $fieldId)
-        ->where('booking_date', $bookingDate)
-        ->where(function ($query) use ($startTime, $endTime) {
-            $query->whereBetween('start_time', [$startTime, $endTime])
-                  ->orWhereBetween('end_time', [$startTime, $endTime])
-                  ->orWhere(function ($q) use ($startTime, $endTime) {
-                      $q->where('start_time', '<', $startTime)
-                        ->where('end_time', '>', $endTime);
-                  });
-        })
-        ->where(function ($query) {
-            $query->where('status', 'confirmed')
-                  ->orWhere(function ($q) {
-                      $q->where('status', 'pending')
-                        ->where('expires_at', '>', now());
-                  });
-        })
-        ->exists();
-}
+    {
+        return !Booking::where('field_id', $fieldId)
+            ->where('booking_date', $bookingDate)
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->whereBetween('start_time', [$startTime, $endTime])
+                      ->orWhereBetween('end_time', [$startTime, $endTime])
+                      ->orWhere(function ($q) use ($startTime, $endTime) {
+                          $q->where('start_time', '<', $startTime)
+                            ->where('end_time', '>', $endTime);
+                      });
+            })
+            ->where('status', '!=', 'canceled') // Hanya abaikan booking yang cancelled
+            ->exists();
+    }
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($booking) {
+            if ($booking->status === 'confirmed') {
+                throw new \Exception('Tidak dapat menghapus booking yang sudah dikonfirmasi');
+            }
+        });
+    }
 }

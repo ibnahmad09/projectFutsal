@@ -29,12 +29,12 @@ class BookingController extends Controller
 
             // Data untuk status distribution
             $statusDistribution = [
-                'labels' => ['Confirmed', 'Pending', 'Completed', 'Cancelled'],
+                'labels' => ['Confirmed', 'Pending', 'Completed', 'Canceled'],
                 'data' => [
                     Booking::where('status', 'confirmed')->count(),
                     Booking::where('status', 'pending')->count(),
                     Booking::where('status', 'completed')->count(),
-                    Booking::where('status', 'cancelled')->count()
+                    Booking::where('status', 'canceled')->count()
                 ]
             ];
 
@@ -114,87 +114,83 @@ class BookingController extends Controller
     public function show(Booking $booking)
     {
         $booking->load(['user', 'field', 'payment']);
-        return view('admin.bookings.show', compact('booking'));
+        return view('admin.show-booking', compact('booking'));
     }
 
     // Menampilkan form edit
     public function edit(Booking $booking)
     {
+        // Get available fields and users
+        $fields = Field::where('is_available', 1)->get();
         $users = User::where('role', 'user')->get();
-        $fields = Field::where('status', 'available')->get();
-        $paymentStatuses = ['pending', 'paid', 'failed'];
+        $payment = Payment::where('status', 'pending')->get();
 
-        return view('admin.bookings.edit', compact('booking', 'users', 'fields', 'paymentStatuses'));
+        return view('admin.edit-booking', compact('booking', 'fields', 'users', 'payment'));
     }
 
     // Update booking
     public function update(Request $request, Booking $booking)
     {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
+        $validated = $request->validate([
             'field_id' => 'required|exists:fields,id',
             'booking_date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
-            'payment_status' => 'required|in:pending,paid,failed'
+            'status' => 'required|in:pending,confirmed,completed,canceled'
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        // Hitung ulang durasi dan harga
+        // Calculate duration and total price
+        $start = \Carbon\Carbon::parse($request->start_time);
+        $end = \Carbon\Carbon::parse($request->end_time);
+        $duration = $end->diffInHours($start);
         $field = Field::findOrFail($request->field_id);
-        $duration = (strtotime($request->end_time) - strtotime($request->start_time)) / 3600;
-        $total_price = $duration * $field->price_per_hour;
-
-        // Cek konflik kecuali dengan booking ini sendiri
-        if ($this->checkBookingConflict(
-            $request->field_id,
-            $request->booking_date,
-            $request->start_time,
-            $request->end_time,
-            $booking->id
-        )) {
-            return redirect()->back()
-                ->withErrors(['time' => 'Waktu booking bertabrakan dengan booking lain'])
-                ->withInput();
-        }
+        $totalPrice = $duration * $field->price_per_hour;
 
         // Update booking
         $booking->update([
-            'user_id' => $request->user_id,
             'field_id' => $request->field_id,
             'booking_date' => $request->booking_date,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
             'duration' => $duration,
-            'total_price' => $total_price,
-            'status' => $request->status ?? 'confirmed'
-        ]);
-
-        // Update pembayaran
-        $booking->payment->update([
-            'amount' => $total_price,
-            'status' => $request->payment_status,
-            'payment_date' => $request->payment_status === 'paid' ? now() : null
+            'total_price' => $totalPrice,
+            'status' => $request->status
         ]);
 
         return redirect()->route('admin.bookings.index')
             ->with('success', 'Booking berhasil diperbarui');
     }
 
+    public function accept(Booking $booking)
+    {
+        $booking->update(['status' => 'confirmed']);
+        return back()->with('success', 'Booking berhasil dikonfirmasi');
+    }
+
+    public function reject(Booking $booking)
+    {
+        $booking->update(['status' => 'canceled']);
+        return back()->with('success', 'Booking berhasil dibatalkan');
+    }
+
     // Hapus booking
     public function destroy(Booking $booking)
     {
-        // Hapus pembayaran terkait
-        $booking->payment()->delete();
-        $booking->delete();
+        try {
+            // Hapus pembayaran terkait jika ada
+            if ($booking->payment) {
+                $booking->payment->delete();
+            }
 
-        return redirect()->route('admin.bookings.index')
-            ->with('success', 'Booking berhasil dihapus');
+            // Hapus booking
+            $booking->delete();
+
+            return redirect()->route('admin.bookings.index')
+                ->with('success', 'Booking berhasil dihapus');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.bookings.index')
+                ->with('error', 'Gagal menghapus booking: ' . $e->getMessage());
+        }
     }
 
     // Fungsi untuk cek konflik booking

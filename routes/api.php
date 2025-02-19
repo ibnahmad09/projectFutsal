@@ -45,6 +45,7 @@ Route::get('/available-times/{field}', function (Field $field) {
 
     $bookedSlots = Booking::where('field_id', $field->id)
         ->whereDate('booking_date', $date)
+        ->where('status', '!=', 'canceled') // Hanya ambil booking yang tidak cancelled
         ->get()
         ->flatMap(function ($booking) {
             return Carbon\CarbonPeriod::create(
@@ -69,4 +70,26 @@ Route::get('/available-times/{field}', function (Field $field) {
     return response()->json([
         'available_slots' => array_values($availableSlots)
     ]);
+});
+
+Route::get('/real-time-schedule', function() {
+    $bookings = \App\Models\Booking::with(['field', 'user'])
+        ->whereDate('booking_date', now()->toDateString())
+        ->where(function($query) {
+            $query->whereTime('end_time', '>=', now()->toTimeString())
+                ->orWhere('status', 'active');
+        })
+        ->orderBy('start_time')
+        ->get()
+        ->map(function($booking) {
+            return [
+                'field_name' => $booking->field->name,
+                'user_name' => $booking->user->name,
+                'start_time' => $booking->start_time,
+                'end_time' => $booking->end_time,
+                'status' => $booking->status
+            ];
+        });
+
+    return response()->json($bookings);
 });
