@@ -8,6 +8,7 @@ use \App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\LapanganController;
 
 
 /*
@@ -27,6 +28,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bookings',[HomeController::class, 'store'])->name('user.bookings.store');
     Route::get('/about', [AboutController::class, 'index'])->name('user.abouts.index');
     Route::post('/midtrans-notification', [HomeController::class, 'handleNotification']);
+    Route::get('/lapangan', [LapanganController::class, 'index'])->name('user.lapangan.index');
+    Route::get('/lapangan/{field}', [LapanganController::class, 'show'])->name('user.lapangan.show');
     Route::get('/bookings/callback', [HomeController::class, 'callback'])->name('user.callback');
     Route::get('/bookings/{booking} ', [HomeController::class, 'showBooking'])->name('user.bookings.show');
     Route::get('/booking', [HomeController::class, 'indexBookings'])->name('user.bookings.index');

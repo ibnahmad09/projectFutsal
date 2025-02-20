@@ -3,91 +3,90 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Booking;
 use App\Models\Field;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
+use Carbon\Carbon;
 
 class LapanganController extends Controller
 {
-    public function create(Field $field)
+    // Menampilkan daftar lapangan
+    public function index()
     {
-        return view('user.lapangan', compact('field'));
+        $fields = Field::where('is_available', true)
+            ->with('images')
+            ->paginate(9);
+
+        return view('user.lapangan', compact('fields'));
     }
 
-    public function store(Request $request)
+    // Menampilkan detail lapangan
+    public function show(Field $field)
+    {
+        $field->load('images');
+        
+        // Cek ketersediaan lapangan
+        $isAvailable = $field->is_available;
+        
+        // Ambil jadwal booking hari ini
+        $todayBookings = Booking::where('field_id', $field->id)
+            ->whereDate('booking_date', today())
+            ->get();
+
+        return view('user.lapangan-detail', compact('field', 'isAvailable', 'todayBookings'));
+    }
+
+    // Proses booking lapangan
+    public function store(Request $request, Field $field)
     {
         $request->validate([
-            'field_id' => 'required|exists:fields,id',
-            'booking_date' => [
+            'booking_date' => 'required|date|after_or_equal:today',
+            'start_time' => [
                 'required',
-                'date',
-                Rule::unique('bookings')->where(function ($query) use ($request) {
-                    return $query->where('field_id', $request->field_id)
-                        ->whereDate('booking_date', $request->booking_date);
-                })->ignore($request->id)
+                'date_format:H:i',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->booking_date == now()->format('Y-m-d') && 
+                        Carbon\Carbon::parse($value)->lt(now()->addHour()->startOfHour())) {
+                        $fail('Waktu booking tidak boleh lebih awal dari waktu sekarang');
+                    }
+                }
             ],
-            'time_slots' => 'required|array|min:1',
-            'time_slots.*' => 'date_format:H:i'
+            'duration' => 'required|integer|min:1|max:4',
+            'payment_method' => 'required|in:cash,transfer,e-wallet'
         ]);
 
-        $field = Field::findOrFail($request->field_id);
-        $slots = $this->processTimeSlots($request->time_slots);
+        // Hitung waktu selesai
+        $start = Carbon::parse($request->start_time);
+        $end = $start->copy()->addHours($request->duration);
 
-        foreach ($slots as $slot) {
-            if (!Booking::isTimeValid($field->id, $request->booking_date, $slot['start'], $slot['end'])) {
-                return back()->withErrors(['time' => 'Slot waktu sudah terisi!']);
-            }
+        // Cek ketersediaan waktu
+        $isAvailable = Booking::where('field_id', $field->id)
+            ->whereDate('booking_date', $request->booking_date)
+            ->where(function($query) use ($start, $end) {
+                $query->whereBetween('start_time', [$start->format('H:i'), $end->format('H:i')])
+                    ->orWhereBetween('end_time', [$start->format('H:i'), $end->format('H:i')]);
+            })
+            ->doesntExist();
+
+        if (!$isAvailable) {
+            return back()->withErrors(['time' => 'Waktu yang dipilih sudah terbooking!']);
         }
 
+        // Hitung total harga
+        $totalPrice = $field->price_per_hour * $request->duration;
+
+        // Buat booking
         $booking = Auth::user()->bookings()->create([
             'field_id' => $field->id,
             'booking_date' => $request->booking_date,
-            'start_time' => $slots[0]['start'],
-            'end_time' => end($slots)['end'],
-            'duration' => count($slots),
-            'total_price' => count($slots) * $field->price_per_hour,
+            'start_time' => $start->format('H:i'),
+            'end_time' => $end->format('H:i'),
+            'duration' => $request->duration,
+            'total_price' => $totalPrice,
             'status' => 'pending'
         ]);
 
-        return redirect()->route('bookings.show', $booking)
-            ->with('success', 'Booking berhasil dibuat!');
-    }
-
-    private function processTimeSlots($slots)
-    {
-        sort($slots);
-        $processed = [];
-        $currentStart = null;
-        $currentEnd = null;
-
-        foreach ($slots as $slot) {
-            $time = \Carbon\Carbon::parse($slot);
-
-            if (!$currentStart) {
-                $currentStart = $time;
-                $currentEnd = $time->addHour();
-            } else {
-                if ($time->eq($currentEnd)) {
-                    $currentEnd = $time->addHour();
-                } else {
-                    $processed[] = [
-                        'start' => $currentStart->format('H:i'),
-                        'end' => $currentEnd->format('H:i')
-                    ];
-                    $currentStart = $time;
-                    $currentEnd = $time->addHour();
-                }
-            }
-        }
-
-        if ($currentStart) {
-            $processed[] = [
-                'start' => $currentStart->format('H:i'),
-                'end' => $currentEnd->format('H:i')
-            ];
-        }
-
-        return $processed;
+        return redirect()->route('user.lapangan.show', $field)
+            ->with('success', 'Booking berhasil dibuat! Kode Booking: ' . $booking->booking_code);
     }
 }

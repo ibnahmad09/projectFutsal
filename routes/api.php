@@ -42,6 +42,8 @@ Route::get('/current-bookings', function() {
 
 Route::get('/available-times/{field}', function (Field $field) {
     $date = request('date');
+    $now = now();
+    $isToday = $date === $now->format('Y-m-d');
 
     // Get booked slots only for this specific field
     $bookedSlots = Booking::where('field_id', $field->id)
@@ -60,14 +62,22 @@ Route::get('/available-times/{field}', function (Field $field) {
     // Generate all possible slots based on this field's opening hours
     $allSlots = [];
     $current = Carbon\Carbon::parse($field->open_time);
-    $endTime = Carbon\Carbon::parse($field->close_time);
+    $closeTime = Carbon\Carbon::parse($field->close_time);
 
-    while ($current < $endTime) {
+    // If booking is for today, start from current time
+    if ($isToday) {
+        $current = $now->copy()->addHour()->startOfHour();
+        if ($current->lt(Carbon\Carbon::parse($field->open_time))) {
+            $current = Carbon\Carbon::parse($field->open_time);
+        }
+    }
+
+    while ($current->lt($closeTime)) {
         $allSlots[] = $current->format('H:i');
         $current->addHour();
     }
 
-    // Calculate available slots by removing booked slots
+    // Filter out booked slots
     $availableSlots = array_diff($allSlots, $bookedSlots->toArray());
 
     return response()->json([

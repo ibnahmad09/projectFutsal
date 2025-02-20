@@ -1,128 +1,141 @@
 @extends('layouts.user')
 
-@section('title', 'Lapangan')
+@section('title', $field->name)
 
 @section('content')
-
-<!-- Header Section -->
- <div class="pt-20 pb-12 bg-green-700">
-    <div class="max-w-7xl mx-auto px-4">
-        <div class="text-center text-white">
-            <h1 class="text-4xl md:text-5xl font-bold mb-2">Lapangan Utama</h1>
-            <div class="flex items-center justify-center gap-2">
-                <i class='bx bx-star text-yellow-400'></i>
-                <span>4.8 (120 reviews)</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Main Content -->
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Gallery -->
-        <div class="lg:col-span-2">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="col-span-2">
-                    <img src="https://source.unsplash.com/random/1200x800?futsal-main"
-                         class="w-full h-96 object-cover rounded-xl">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-600">
+            <li><a href="{{ route('user.lapangan.index') }}" class="hover:text-green-600">Lapangan</a></li>
+            <li class="text-gray-400">/</li>
+            <li class="text-green-600">{{ $field->name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Images Section -->
+        <div class="space-y-6">
+            <!-- Main Image -->
+            <div class="relative h-[300px] md:h-[400px] rounded-2xl overflow-hidden shadow-lg">
+                <img src="{{ $field->images->first() ? asset('storage/' . $field->images->first()->image_path) : 'https://source.unsplash.com/random/800x600?futsal' }}" 
+                     alt="{{ $field->name }}" 
+                     class="w-full h-full object-cover transform hover:scale-105 transition duration-500">
+                <div class="absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                    {{ $field->is_available ? '🟢 Tersedia' : '🔴 Penuh' }}
                 </div>
-                <div class="col-span-1">
-                    <img src="https://source.unsplash.com/random/800x600?futsal2"
-                         class="w-full h-48 object-cover rounded-xl">
+            </div>
+
+            <!-- Thumbnails -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                @foreach($field->images as $image)
+                <div class="h-24 rounded-xl overflow-hidden cursor-pointer group">
+                    <img src="{{ asset('storage/' . $image->image_path) }}" 
+                         alt="{{ $field->name }}" 
+                         class="w-full h-full object-cover transform group-hover:scale-110 transition duration-300">
                 </div>
-                <div class="col-span-1">
-                    <img src="https://source.unsplash.com/random/800x600?futsal3"
-                         class="w-full h-48 object-cover rounded-xl">
-                </div>
+                @endforeach
             </div>
         </div>
 
-        <!-- Booking Form -->
-        <div class="bg-white p-6 rounded-xl shadow-md h-fit sticky top-8">
-            <h2 class="text-2xl font-bold mb-4">Booking Sekarang</h2>
-
+        <!-- Details Section -->
+        <div class="space-y-6">
+            <!-- Header -->
             <div class="space-y-4">
-                <div>
-                    <label class="block mb-2 font-medium">Tanggal</label>
-                    <input type="date" class="w-full p-2 border rounded-lg">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">{{ $field->name }}</h1>
+                
+                <!-- Rating and Reviews -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center bg-green-50 px-3 py-1 rounded-full">
+                        <i class='bx bx-star text-yellow-400 mr-1'></i>
+                        <span class="font-semibold">{{ $field->rating ?? '4.5' }}</span>
+                    </div>
+                    <span class="text-gray-600">({{ $field->reviews_count ?? 0 }} review)</span>
                 </div>
 
-                <div>
-                    <label class="block mb-2 font-medium">Waktu</label>
-                    <select class="w-full p-2 border rounded-lg">
-                        <option>08:00 - 09:00</option>
-                        <option>09:00 - 10:00</option>
-                        <!-- Tambahkan slot waktu -->
-                    </select>
+                <!-- Price -->
+                <div class="text-2xl md:text-3xl font-bold text-green-600">
+                    Rp{{ number_format($field->price_per_hour, 0, ',', '.') }}/jam
                 </div>
-
-                <div>
-                    <label class="block mb-2 font-medium">Durasi</label>
-                    <select class="w-full p-2 border rounded-lg">
-                        <option>1 Jam</option>
-                        <option>2 Jam</option>
-                        <option>3 Jam</option>
-                    </select>
-                </div>
-
-                <hr class="my-4">
-
-                <div class="flex justify-between text-xl font-bold">
-                    <span>Total:</span>
-                    <span>Rp240.000</span>
-                </div>
-
-                <button class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
-                    Lanjutkan ke Pembayaran
-                </button>
             </div>
+
+            <!-- Booking Button -->
+            <button onclick="openBookingModal({{ $field->id }})"
+                    class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                🏀 Booking Sekarang
+            </button>
+
+            <!-- Field Details -->
+            <div class="grid grid-cols-2 gap-4 bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-green-50 rounded-lg">
+                        <i class='bx bx-map text-green-600'></i>
+                    </div>
+                    <span class="text-sm md:text-base">{{ $field->location }}</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-green-50 rounded-lg">
+                        <i class='bx bx-time text-green-600'></i>
+                    </div>
+                    <span class="text-sm md:text-base">{{ date('H:i', strtotime($field->open_time)) }} - {{ date('H:i', strtotime($field->close_time)) }}</span>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">Deskripsi Lapangan</h2>
+                <p class="text-gray-600 leading-relaxed text-sm md:text-base">{{ $field->description }}</p>
+            </div>
+
+            <!-- Facilities -->
+            @if($field->facilities)
+            <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">Fasilitas</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    @foreach(json_decode($field->facilities) as $facility)
+                    <div class="flex items-center space-x-2">
+                        <div class="p-1.5 bg-green-50 rounded-md">
+                            <i class='bx bx-check text-green-600'></i>
+                        </div>
+                        <span class="text-gray-600 text-sm md:text-base">{{ ucfirst($facility) }}</span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 
-    <!-- Info Section -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-        <!-- Fasilitas -->
-        <div class="bg-white p-6 rounded-xl shadow-md">
-            <h3 class="text-2xl font-bold mb-4">Fasilitas</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="flex items-center">
-                    <i class='bx bx-wifi text-green-600 mr-2'></i>
-                    WiFi Gratis
-                </div>
-                <div class="flex items-center">
-                    <i class='bx bx-car text-green-600 mr-2'></i>
-                    Parkir Luas
-                </div>
-                <!-- Tambahkan fasilitas lain -->
-            </div>
-        </div>
-
-        <!-- Ulasan -->
-        <div class="bg-white p-6 rounded-xl shadow-md">
-            <h3 class="text-2xl font-bold mb-4">Ulasan (120)</h3>
-
-            <!-- Review Item -->
-            <div class="border-b pb-4 mb-4">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-10 h-10 bg-gray-200 rounded-full"></div>
-                    <div>
-                        <h4 class="font-bold">John Doe</h4>
-                        <div class="flex items-center text-yellow-400">
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star-half'></i>
-                        </div>
+    <!-- Today's Schedule -->
+    <div class="mt-12">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Jadwal Hari Ini</h2>
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-6">
+            @if($todayBookings->isEmpty())
+            <div class="text-center text-gray-500 py-4">Tidak ada booking hari ini</div>
+            @else
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                @foreach($todayBookings as $booking)
+                <div class="p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-all">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold text-sm md:text-base">{{ $booking->start_time }} - {{ $booking->end_time }}</span>
+                        <span class="px-2 py-1 text-xs md:text-sm rounded-full 
+                            @if($booking->status == 'confirmed') bg-green-100 text-green-800
+                            @elseif($booking->status == 'pending') bg-yellow-100 text-yellow-800
+                            @else bg-red-100 text-red-800 @endif">
+                            {{ ucfirst($booking->status) }}
+                        </span>
                     </div>
+                    <div class="text-xs md:text-sm text-gray-600">Durasi: {{ $booking->duration }} Jam</div>
                 </div>
-                <p class="text-gray-600">Lapangan sangat nyaman dengan rumput sintetis berkualitas tinggi...</p>
+                @endforeach
             </div>
-
-            <!-- Tambahkan lebih banyak ulasan -->
+            @endif
         </div>
     </div>
 </div>
+
+<!-- Include Booking Modal -->
+@include('user.booking')
 
 @endsection

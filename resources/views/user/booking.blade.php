@@ -19,7 +19,7 @@
                     <label class="block mb-2">Tanggal Booking</label>
                     <input type="date" id="booking_date"
                            class="w-full p-2 border rounded-lg"
-                           min="{{ now()->addDay()->format('Y-m-d') }}"
+                           min="{{ now()->format('Y-m-d') }}"
                            required>
                 </div>
 
@@ -71,7 +71,6 @@
                 <div class="mb-4">
                     <label class="block mb-2">Metode Pembayaran</label>
                     <select id="payment_method" class="w-full p-2 border rounded-lg" required>
-                        <option value="transfer">Transfer Bank</option>
                         <option value="cash">Tunai di Tempat</option>
                         <option value="e-wallet">E-Wallet</option>
                     </select>
@@ -260,6 +259,11 @@ async function submitBooking(e) {
         });
 
         const data = await response.json();
+        
+        // Jika response tidak sukses
+        if (!response.ok) {
+            throw new Error(data.message || 'Terjadi kesalahan sistem');
+        }
 
         if (data.snap_token) {
             // Buka popup Midtrans
@@ -271,7 +275,7 @@ async function submitBooking(e) {
                     window.location.href = '{{ route("user.callback") }}';
                 },
                 onError: function(result) {
-                    window.location.href = '{{ route("user.callback") }}';
+                    Swal.fire('Error!', 'Pembayaran gagal', 'error');
                 }
             });
         } else {
@@ -279,7 +283,8 @@ async function submitBooking(e) {
             closeBookingModal();
         }
     } catch (error) {
-        Swal.fire('Error!', 'Terjadi kesalahan sistem', 'error');
+        console.error('Booking Error:', error);
+        Swal.fire('Error!', error.message || 'Terjadi kesalahan sistem', 'error');
     }
 }
 

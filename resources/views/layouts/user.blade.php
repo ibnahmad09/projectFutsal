@@ -22,7 +22,7 @@
 
                 <!-- Menu Desktop -->
                 <div class="hidden md:flex space-x-8">
-                    <a href="{{route('user.home.index')}}" class="text-white hover:text-green-200">Lapangan</a>
+                    <a href="{{route('user.lapangan.index')}}" class="text-white hover:text-green-200">Lapangan</a>
                     <a href="{{ route('user.abouts.index') }}" class="text-white hover:text-green-200">Tentang</a>
                     <a href="{{route('user.profil.show')}}" class="text-white hover:text-green-200">Profil</a>
                     <a href="{{ route('user.bookings.index') }}" class="text-white hover:text-green-200">Riwayat Boooking</a>
@@ -52,7 +52,7 @@
         <!-- Menu Mobile -->
         <div class="md:hidden" id="mobile-menu" style="display: none;">
             <div class="flex flex-col space-y-2 px-4 py-2">
-                <a href="{{route('user.home.index')}}" class="text-white hover:text-green-200">Lapangan</a>
+                <a href="{{route('user.lapangan.index')}}" class="text-white hover:text-green-200">Lapangan</a>
                 <a href="{{ route('user.abouts.index') }}" class="text-white hover:text-green-200">Tentang</a>
                 <a href="{{route ('user.profil.show')}}" class="text-white hover:text-green-200">Profil</a>
                 <a href="{{ route('user.bookings.index') }}" class="text-white hover:text-green-200">Riwayat Booking</a>

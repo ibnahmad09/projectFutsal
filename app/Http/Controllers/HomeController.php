@@ -30,38 +30,39 @@ class HomeController extends Controller
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index()
-{
-    $fields = Field::where('is_available', true)->get();
+    {
+        $fields = Field::where('is_available', true)->get();
 
-    // Get current bookings
-    $currentBookings = Booking::with(['field', 'user'])
-        ->whereDate('booking_date', now()->toDateString())
-        ->where(function($query) {
-            $query->whereTime('end_time', '>=', now()->toTimeString())
-                ->orWhere('status', 'active');
-        })
-        ->orderBy('start_time')
-        ->get();
+        // Get current bookings
+        $currentBookings = Booking::with(['field', 'user'])
+            ->whereDate('booking_date', now()->toDateString())
+            ->where(function($query) {
+                $query->whereTime('end_time', '>=', now()->toTimeString())
+                    ->orWhere('status', 'active');
+            })
+            ->orderBy('start_time')
+            ->get();
 
-    // Get active bookings (currently ongoing)
-    $activeBookings = Booking::with(['field', 'user'])
-        ->whereDate('booking_date', now()->toDateString())
-        ->whereTime('start_time', '<=', now()->toTimeString())
-        ->whereTime('end_time', '>=', now()->toTimeString())
-        ->where('status', 'confirmed')
-        ->orderBy('start_time')
-        ->get();
+        // Get active bookings (currently ongoing)
+        $activeBookings = Booking::with(['field', 'user'])
+            ->whereDate('booking_date', now()->toDateString())
+            ->whereTime('start_time', '<=', now()->toTimeString())
+            ->whereTime('end_time', '>=', now()->toTimeString())
+            ->where('status', 'confirmed')
+            ->orderBy('start_time')
+            ->get();
 
-    // Get upcoming bookings (future bookings)
-    $upcomingBookings = Booking::with(['field', 'user'])
-        ->whereDate('booking_date', now()->toDateString())
-        ->whereTime('start_time', '>', now()->toTimeString())
-        ->where('status', 'confirmed')
-        ->orderBy('start_time')
-        ->get();
+        // Get upcoming bookings (future bookings)
+        $upcomingBookings = Booking::with(['field', 'user'])
+            ->whereDate('booking_date', now()->toDateString())
+            ->whereTime('start_time', '>', now()->toTimeString())
+            ->where('status', 'confirmed')
+            ->orderBy('start_time')
+            ->get();
 
-    return view('user.index', compact('fields', 'currentBookings', 'activeBookings', 'upcomingBookings'));
-}
+        return view('user.index', compact('fields', 'currentBookings', 'activeBookings', 'upcomingBookings'));
+    }
+
     public function getCurrentBookings()
     {
         $currentBookings = Booking::with(['field', 'user'])
@@ -77,119 +78,144 @@ class HomeController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'field_id' => 'required|exists:fields,id',
-            'booking_date' => 'required|date|after:today',
-            'start_time' => 'required|date_format:H:i',
-            'duration' => 'required|integer|min:1|max:4',
-            'payment_method' => 'required|in:cash,transfer,e-wallet',
-        ]);
+        try {
+            \Log::info('Booking Request:', $request->all());
+            
+            $validated = $request->validate([
+                'field_id' => 'required|exists:fields,id',
+                'booking_date' => 'required|date|after_or_equal:today',
+                'start_time' => 'required|date_format:H:i',
+                'duration' => 'required|integer|min:1|max:4',
+                'payment_method' => 'required|in:cash,e-wallet',
+            ]);
 
-        $field = Field::findOrFail($request->field_id);
+            $field = Field::findOrFail($request->field_id);
 
-        // Hitung end_time
-        $start = \Carbon\Carbon::parse($request->start_time);
-        $end = $start->copy()->addHours($request->duration);
+            // Hitung end_time
+            $start = \Carbon\Carbon::parse($request->start_time);
+            $end = $start->copy()->addHours($request->duration);
 
-        // Cek ketersediaan
-        if (!Booking::isTimeValid($field->id, $request->booking_date, $start->format('H:i'), $end->format('H:i'))) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Waktu booking tidak tersedia',
-                ],
-                422,
-            );
-        }
-
-        // Create booking
-        $booking = Booking::create([
-            'booking_code' => 'BOOK-' . strtoupper(uniqid()),
-            'user_id' => Auth::id(),
-            'field_id' => $field->id,
-            'booking_date' => $request->booking_date,
-            'start_time' => $start->format('H:i'),
-            'end_time' => $end->format('H:i'),
-            'duration' => $request->duration,
-            'total_price' => $field->price_per_hour * $request->duration,
-            'payment_method' => $request->payment_method,
-            'status' => 'pending',
-            'expires_at' => now()->addMinutes(15),
-        ]);
-
-        // Jika metode pembayaran e-wallet
-        if ($request->payment_method === 'e-wallet') {
-            try {
-                // Setup Midtrans
-                Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-                Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
-                Config::$isSanitized = true;
-                Config::$is3ds = true;
-
-                // Parameter transaksi
-                $params = [
-                    'transaction_details' => [
-                        'order_id' => $booking->id . '-' . uniqid(),
-                        'gross_amount' => $booking->total_price,
-                    ],
-                    'customer_details' => [
-                        'first_name' => Auth::user()->name,
-                        'email' => Auth::user()->email,
-                        'phone' => Auth::user()->phone_number,
-                    ],
-                    'enabled_payments' => ['gopay', 'shopeepay'],
-                    'expiry' => [
-                        'duration' => 2,
-                        'unit' => 'hour',
-                    ],
-                    'recurring' => true, // Tambahkan ini untuk recurring payment
-                ];
-
-                // Dapatkan Snap Token
-                $snapToken = Snap::getSnapToken($params);
-
-                // Update booking dengan snap token
-                $booking->update(['snap_token' => $snapToken]);
-
-                // Simpan ke tabel payments
-                Payment::create([
-                    'booking_id' => $booking->id,
-                    'payment_method' => 'e-wallet',
-                    'amount' => $booking->total_price,
-                    'status' => 'pending',
-                    'transaction_id' => $params['transaction_details']['order_id'],
-                    'midtrans_response' => json_encode(['snap_token' => $snapToken]),
-                ]);
-
-                return response()->json([
-                    'success' => true,
-                    'snap_token' => $snapToken,
-                    'booking_id' => $booking->id,
-                    'message' => 'Lanjutkan ke pembayaran',
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Midtrans Payment Error:', [
-                    'error' => $e->getMessage(),
-                    'booking_id' => $booking->id,
-                    'user_id' => Auth::id(),
-                ]);
-                $booking->delete();
+            // Cek ketersediaan
+            if (!Booking::isTimeValid($field->id, $request->booking_date, $start->format('H:i'), $end->format('H:i'))) {
                 return response()->json(
                     [
                         'success' => false,
-                        'message' => 'Error pembayaran: ' . $e->getMessage(),
+                        'message' => 'Waktu booking tidak tersedia',
                     ],
-                    500,
+                    422,
                 );
             }
-        }
 
-        // Untuk metode pembayaran non e-wallet
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking berhasil dibuat',
-        ]);
+            // Create booking
+            $booking = Booking::create([
+                'booking_code' => 'BOOK-' . strtoupper(uniqid()),
+                'user_id' => Auth::id(),
+                'field_id' => $field->id,
+                'booking_date' => $request->booking_date,
+                'start_time' => $start->format('H:i'),
+                'end_time' => $end->format('H:i'),
+                'duration' => $request->duration,
+                'total_price' => $field->price_per_hour * $request->duration,
+                'payment_method' => $request->payment_method,
+                'status' => 'pending',
+                'expires_at' => now()->addMinutes(15),
+            ]);
+
+            // Jika metode pembayaran e-wallet
+            if ($request->payment_method === 'e-wallet') {
+                try {
+                    // Setup Midtrans
+                    Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+                    Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+                    Config::$isSanitized = true;
+                    Config::$is3ds = true;
+
+                    // Parameter transaksi
+                    $params = [
+                        'transaction_details' => [
+                            'order_id' => $booking->id . '-' . uniqid(),
+                            'gross_amount' => $booking->total_price,
+                        ],
+                        'customer_details' => [
+                            'first_name' => Auth::user()->name,
+                            'email' => Auth::user()->email,
+                            'phone' => Auth::user()->phone_number,
+                        ],
+                        'enabled_payments' => ['gopay', 'shopeepay'],
+                        'expiry' => [
+                            'duration' => 2,
+                            'unit' => 'hour',
+                        ],
+                        'recurring' => true, // Tambahkan ini untuk recurring payment
+                    ];
+
+                    // Dapatkan Snap Token
+                    $snapToken = Snap::getSnapToken($params);
+
+                    // Update booking dengan snap token
+                    $booking->update(['snap_token' => $snapToken]);
+
+                    // Simpan ke tabel payments
+                    Payment::create([
+                        'booking_id' => $booking->id,
+                        'payment_method' => 'e-wallet',
+                        'amount' => $booking->total_price,
+                        'status' => 'pending',
+                        'transaction_id' => $params['transaction_details']['order_id'],
+                        'midtrans_response' => json_encode(['snap_token' => $snapToken]),
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'snap_token' => $snapToken,
+                        'booking_id' => $booking->id,
+                        'message' => 'Lanjutkan ke pembayaran',
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Midtrans Payment Error:', [
+                        'error' => $e->getMessage(),
+                        'booking_id' => $booking->id,
+                        'user_id' => Auth::id(),
+                    ]);
+                    $booking->delete();
+                    return response()->json(
+                        [
+                            'success' => false,
+                            'message' => 'Error pembayaran: ' . $e->getMessage(),
+                        ],
+                        500,
+                    );
+                }
+            } else {
+                // Untuk cash dan transfer
+                Payment::create([
+                    'booking_id' => $booking->id,
+                    'payment_method' => $request->payment_method,
+                    'amount' => $booking->total_price,
+                    'status' => $request->payment_method === 'cash' ? 'pending' : 'paid',
+                    'payment_date' => $request->payment_method === 'cash' ? null : now()
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking berhasil dibuat',
+                'payment_method' => $request->payment_method,
+                'booking_id' => $booking->id
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Booking Error:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
+
     public function handleNotification(Request $request)
     {
         $payload = $request->getContent();
