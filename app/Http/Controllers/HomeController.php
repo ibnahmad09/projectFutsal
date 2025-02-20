@@ -176,6 +176,7 @@ class HomeController extends Controller
                         'status' => 'pending',
                         'transaction_id' => $params['transaction_details']['order_id'],
                         'midtrans_response' => json_encode(['snap_token' => $snapToken]),
+                        'payment_date' => now()
                     ]);
 
                     return response()->json([
@@ -206,7 +207,7 @@ class HomeController extends Controller
                     'payment_method' => $request->payment_method,
                     'amount' => $booking->total_price,
                     'status' => $request->payment_method === 'cash' ? 'pending' : 'paid',
-                    'payment_date' => $request->payment_method === 'cash' ? null : now()
+                    'payment_date' => now()
                 ]);
             }
 

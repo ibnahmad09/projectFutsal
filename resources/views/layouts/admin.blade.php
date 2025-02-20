@@ -68,13 +68,17 @@
                 <i class='bx bx-football text-green-400 mr-2'></i>
                 Fields
             </a>
-            <a class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
+            <a href="{{ route('admin.analytics') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-line-chart text-green-400 mr-2'></i>
                 Analytics
             </a>
-            <a class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
+            <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-user text-green-400 mr-2'></i>
                 Users
+            </a>
+            <a href="{{ route('admin.reports.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
+                <i class='bx bx-file text-green-400 mr-2'></i>
+                Report
             </a>
         </nav>
     </aside>

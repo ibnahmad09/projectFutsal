@@ -14,50 +14,48 @@ class AdminController extends Controller
 {
 
     public function dashboard()
-{
-    // Ambil data statistik yang diperlukan
-    $totalBookings = Booking::count();
-    $totalFields = Field::count();
-    $recentBookings = Booking::with(['user', 'field'])
-        ->orderBy('created_at', 'desc')
-        ->take(5)
-        ->get();
+    {
+        // Ambil data statistik yang diperlukan
+        $totalBookings = Booking::count();
+        $totalFields = Field::count();
+        $recentBookings = Booking::with(['user', 'field'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
         // Hitung revenue hari ini
-    $todayRevenue = Payment::whereDate('payment_date', today())
-    ->where('status', 'paid')
-    ->sum('amount');
-    // Hitung active users (yang melakukan booking dalam 30 hari terakhir)
-    $activeUsers = User::whereHas('bookings', function($query) {
-        $query->where('created_at', '>=', now()->subDays(30));
-    })->count();
+        $todayRevenue = Payment::whereDate('payment_date', today())
+            ->where('status', 'success')
+            ->sum('amount');
+        // Hitung active users (yang melakukan booking dalam 30 hari terakhir)
+        $activeUsers = User::whereHas('bookings', function($query) {
+            $query->where('created_at', '>=', now()->subDays(30));
+        })->count();
 
-// Hitung field occupancy rate
-    $totalSlots = Field::count() * 24; // Asumsi 24 slot per hari
-    $bookedSlots = Booking::whereDate('booking_date', today())->count();
-    $fieldOccupancy = $totalSlots > 0 ? round(($bookedSlots / $totalSlots) * 100) : 0;
+        // Hitung field occupancy rate
+        $totalSlots = Field::count() * 24; // Asumsi 24 slot per hari
+        $bookedSlots = Booking::whereDate('booking_date', today())->count();
+        $fieldOccupancy = $totalSlots > 0 ? round(($bookedSlots / $totalSlots) * 100) : 0;
 
-    // Data untuk booking trends
-    $bookingTrends = [
-        'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        'data' => Booking::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-            ->groupBy('month')
-            ->pluck('count')
-            ->toArray()
-    ];
+        // Data untuk booking trends
+        $bookingTrends = [
+            'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            'data' => Booking::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+                ->groupBy('month')
+                ->pluck('count')
+                ->toArray()
+        ];
 
-    // Data untuk field performance
-    $fieldPerformanceData = [
-        'labels' => Field::pluck('name')->toArray(),
-        'data' => Field::withCount('bookings')->pluck('bookings_count')->toArray()
-    ];
+        // Data untuk field performance
+        $fieldPerformanceData = [
+            'labels' => Field::pluck('name')->toArray(),
+            'data' => Field::withCount('bookings')->pluck('bookings_count')->toArray()
+        ];
 
-
-
-    return view('admin.dashboard', compact('totalBookings', 'totalFields', 'recentBookings', 'todayRevenue', 'activeUsers',
-    'fieldOccupancy', 'bookingTrends',
-        'fieldPerformanceData'));
-}
+        return view('admin.dashboard', compact('totalBookings', 'totalFields', 'recentBookings', 'todayRevenue', 'activeUsers',
+        'fieldOccupancy', 'bookingTrends',
+            'fieldPerformanceData'));
+    }
 
     public function bookings()
     {
@@ -72,11 +70,9 @@ class AdminController extends Controller
         $booking = Booking::findOrFail($id);
         $booking->update(['status' => 'confirmed']);
 
-        // Update payment status
-        if($booking->payment_method === 'e-wallet') {
-            Payment::where('booking_id', $booking->id)
-                ->update(['status' => 'success']);
-        }
+        // Update payment status untuk semua jenis payment method
+        Payment::where('booking_id', $booking->id)
+            ->update(['status' => 'success']);
 
         return redirect()->back()
             ->with('success', 'Booking berhasil dikonfirmasi');

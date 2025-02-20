@@ -17,6 +17,12 @@
         <form action="{{ route('admin.reports.store') }}" method="POST">
             @csrf
             
+            <!-- Report Title -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Judul Laporan</label>
+                <input type="text" name="title" class="w-full p-3 bg-gray-800 rounded-lg focus:ring-2 focus:ring-green-400" required>
+            </div>
+
             <!-- Report Type -->
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-2">Jenis Laporan</label>

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Admin Cyber Dashboard - FUTSALDESA')
+@section('title', ' Dashboard - FUTSALDESA')
 
 @section('content')
 

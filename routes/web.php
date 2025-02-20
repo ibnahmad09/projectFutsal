@@ -9,7 +9,8 @@ use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\LapanganController;
-
+use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,7 +83,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/{report}', [ReportController::class, 'destroy'])->name('admin.reports.destroy');
         });
 
-        
+        Route::get('/users', [UserController::class, 'users'])->name('admin.users.index');
+        Route::get('/users/create', [UserController::class, 'createUser'])->name('admin.users.create');
+        Route::post('/users', [UserController::class, 'storeUser'])->name('admin.users.store');
+        Route::get('/users/{user}/edit', [UserController::class, 'editUser'])->name('admin.users.edit');
+        Route::put('/users/{user}', [UserController::class, 'updateUser'])->name('admin.users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroyUser'])->name('admin.users.destroy');
+
+        Route::get('/analytics', [AnalyticsController::class, 'index'])->name('admin.analytics');
     });
 
 
