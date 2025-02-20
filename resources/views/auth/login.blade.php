@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-2xl border border-gray-100">
         <div class="text-center">
-            <h2 class="mt-6 text-3xl font-bold text-gray-900">
-                <i class="fas fa-sign-in-alt mr-2 text-blue-500"></i>MASUK
+            <h2 class="mt-6 text-4xl font-bold text-gray-900">
+                <i class="fas fa-futbol mr-3 text-green-600"></i>MASUK
             </h2>
             <p class="mt-2 text-sm text-gray-600">
                 Selamat datang di FutsalDesa
@@ -15,17 +15,17 @@
         <form class="mt-8 space-y-6" method="POST" action="{{ route('login') }}">
             @csrf
 
-            <div class="rounded-md shadow-sm space-y-4">
+            <div class="rounded-lg shadow-sm space-y-5">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        <i class="fas fa-envelope mr-2 text-gray-500"></i>Email
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-envelope text-gray-500 mr-2"></i>Email
                     </label>
                     <input id="email" name="email" type="email" required
-                           class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                           class="appearance-none rounded-lg relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm transition duration-200 ease-in-out"
                            placeholder="email@example.com"
                            value="{{ old('email') }}">
                     @error('email')
-                        <p class="mt-1 text-sm text-red-600">
+                        <p class="mt-2 text-sm text-red-600 flex items-center">
                             <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                         </p>
                     @enderror
@@ -63,14 +63,14 @@
                 @endif
             </div>
 
-            <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200 ease-in-out transform hover:scale-[1.02] shadow-lg">
                 <i class="fas fa-sign-in-alt mr-2"></i>MASUK
             </button>
 
             <div class="text-center text-sm">
                 <p class="text-gray-600">
                     Belum punya akun?
-                    <a href="{{ route('register') }}" class="font-medium text-blue-600 hover:text-blue-500">
+                    <a href="{{ route('register') }}" class="font-medium text-green-600 hover:text-green-500">
                         Daftar Sekarang
                     </a>
                 </p>

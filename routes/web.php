@@ -23,16 +23,23 @@ use App\Http\Controllers\LapanganController;
 */
 
 
+
+
+
+// Route yang bisa diakses tanpa login
+Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
+Route::get('/home', [HomeController::class, 'index'])->name('user.home.index')->middleware('auth');
+Route::get('/about', [AboutController::class, 'index'])->name('user.abouts.index');
+Route::get('/lapangan', [LapanganController::class, 'index'])->name('user.lapangan.index');
+Route::get('/lapangan/{field}', [LapanganController::class, 'show'])->name('user.lapangan.show');
+
 Auth::routes(['verify' => true]);
 
-
+// Route yang memerlukan login
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', [HomeController::class, 'index'])->name('user.home.index');
+    Route::get('/home', [HomeController::class, 'index'])->name('user.home.index');
     Route::post('/bookings',[HomeController::class, 'store'])->name('user.bookings.store');
-    Route::get('/about', [AboutController::class, 'index'])->name('user.abouts.index');
     Route::post('/midtrans-notification', [HomeController::class, 'handleNotification']);
-    Route::get('/lapangan', [LapanganController::class, 'index'])->name('user.lapangan.index');
-    Route::get('/lapangan/{field}', [LapanganController::class, 'show'])->name('user.lapangan.show');
     Route::get('/bookings/callback', [HomeController::class, 'callback'])->name('user.callback');
     Route::get('/bookings/{booking} ', [HomeController::class, 'showBooking'])->name('user.bookings.show');
     Route::get('/booking', [HomeController::class, 'indexBookings'])->name('user.bookings.index');

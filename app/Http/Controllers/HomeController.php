@@ -21,7 +21,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+       
     }
 
     /**
@@ -29,8 +29,21 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
+
+     public function welcome()
+    {
+        $fields = Field::where('is_available', true)
+            ->with('images')
+            ->get();
+
+        return view('welcome', compact('fields'));
+    }
+
+
     public function index()
     {
+
+        
         $fields = Field::where('is_available', true)->get();
 
         // Get current bookings
@@ -353,4 +366,6 @@ class HomeController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+    
 }
