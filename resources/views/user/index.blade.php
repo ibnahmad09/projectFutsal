@@ -38,17 +38,27 @@
     <div class="max-w-7xl mx-auto px-4 py-12">
         <h2 class="text-3xl font-bold mb-8 text-center">Jadwal Booking</h2>
 
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 font-semibold">
-                <div>Lapangan</div>
-                <div>Pemesan</div>
-                <div>Waktu</div>
-                <div>Status</div>
-                <div>Tipe</div>
+        <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
+            <!-- Desktop View -->
+            <div class="hidden md:block">
+                <div class="grid grid-cols-5 gap-4 mb-4 font-semibold p-3 bg-gray-50 rounded-lg">
+                    <div>Lapangan</div>
+                    <div>Pemesan</div>
+                    <div>Waktu</div>
+                    <div>Status</div>
+                    <div>Tipe</div>
+                </div>
+
+                <div id="real-time-schedule" class="space-y-2">
+                    <div class="text-center py-4 text-gray-500">Memuat data...</div>
+                </div>
             </div>
 
-            <div id="real-time-schedule">
-                <div class="text-center py-4 text-gray-500">Memuat data...</div>
+            <!-- Mobile View -->
+            <div class="md:hidden">
+                <div id="real-time-schedule-mobile" class="space-y-3">
+                    <div class="text-center py-4 text-gray-500">Memuat data...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -58,14 +68,17 @@
             fetch('/api/real-time-schedule')
                 .then(response => response.json())
                 .then(data => {
-                    const container = document.getElementById('real-time-schedule');
+                    const desktopContainer = document.getElementById('real-time-schedule');
+                    const mobileContainer = document.getElementById('real-time-schedule-mobile');
+                    
                     if (data.length > 0) {
-                        container.innerHTML = data.map(booking => `
-                            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 py-2 border-b last:border-b-0">
-                                <div>${booking.field_name}</div>
-                                <div>${booking.user_name}</div>
-                                <div>${booking.start_time} - ${booking.end_time}</div>
-                                <div class="capitalize">
+                        // Desktop View
+                        desktopContainer.innerHTML = data.map(booking => `
+                            <div class="grid grid-cols-5 gap-4 p-3 bg-white rounded-lg hover:bg-gray-50 transition-all">
+                                <div class="flex items-center">${booking.field_name}</div>
+                                <div class="flex items-center">${booking.user_name}</div>
+                                <div class="flex items-center">${booking.start_time} - ${booking.end_time}</div>
+                                <div class="flex items-center">
                                     <span class="px-2 py-1 rounded-full text-sm 
                                         ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                                         booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -73,7 +86,7 @@
                                         ${booking.status}
                                     </span>
                                 </div>
-                                <div class="capitalize">
+                                <div class="flex items-center">
                                     <span class="px-2 py-1 rounded-full text-sm 
                                         ${booking.type === 'ongoing' ? 'bg-blue-100 text-blue-800' :
                                         'bg-purple-100 text-purple-800'}">
@@ -82,8 +95,51 @@
                                 </div>
                             </div>
                         `).join('');
+
+                        // Mobile View
+                        mobileContainer.innerHTML = data.map(booking => `
+                            <div class="bg-white p-4 rounded-lg shadow-sm">
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <div class="font-medium">Lapangan</div>
+                                        <div>${booking.field_name}</div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="font-medium">Pemesan</div>
+                                        <div>${booking.user_name}</div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="font-medium">Waktu</div>
+                                        <div>${booking.start_time} - ${booking.end_time}</div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="font-medium">Status</div>
+                                        <div>
+                                            <span class="px-2 py-1 rounded-full text-sm 
+                                                ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                                booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-red-100 text-red-800'}">
+                                                ${booking.status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="font-medium">Tipe</div>
+                                        <div>
+                                            <span class="px-2 py-1 rounded-full text-sm 
+                                                ${booking.type === 'ongoing' ? 'bg-blue-100 text-blue-800' :
+                                                'bg-purple-100 text-purple-800'}">
+                                                ${booking.type === 'ongoing' ? 'Sedang Berjalan' : 'Akan Datang'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
                     } else {
-                        container.innerHTML =
+                        desktopContainer.innerHTML =
+                            '<div class="text-center py-4 text-gray-500">Tidak ada jadwal saat ini</div>';
+                        mobileContainer.innerHTML =
                             '<div class="text-center py-4 text-gray-500">Tidak ada jadwal saat ini</div>';
                     }
                 })
@@ -101,16 +157,36 @@
 
     <style>
         #real-time-schedule {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
         }
 
-        #real-time-schedule>div {
-            transition: background-color 0.3s ease;
+        #real-time-schedule-mobile {
+            max-height: 600px;
+            overflow-y: auto;
         }
 
-        #real-time-schedule>div:hover {
-            background-color: #f3f4f6;
+        /* Scrollbar styling */
+        #real-time-schedule::-webkit-scrollbar,
+        #real-time-schedule-mobile::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #real-time-schedule::-webkit-scrollbar-track,
+        #real-time-schedule-mobile::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #real-time-schedule::-webkit-scrollbar-thumb,
+        #real-time-schedule-mobile::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        #real-time-schedule::-webkit-scrollbar-thumb:hover,
+        #real-time-schedule-mobile::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 
@@ -145,7 +221,7 @@
                             <span
                                 class="text-2xl font-bold text-green-600">Rp{{ number_format($field->price_per_hour, 0, ',', '.') }}/jam</span>
                             <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-                                onclick="openBookingModal({{ $field->id }})">
+                                onclick="openBookingModal({{ $field->id }})"">
                                 Booking
                             </button>
                         </div>
