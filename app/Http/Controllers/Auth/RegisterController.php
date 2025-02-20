@@ -30,7 +30,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
@@ -74,20 +74,10 @@ class RegisterController extends Controller
             'address' => $data['address'],
         ]);
 
-        // Login pengguna setelah registrasi berhasil
-        Auth::login($user);
+        // Kirim email verifikasi
+        $user->sendEmailVerificationNotification();
 
-        // Redirect ke halaman login setelah registrasi berhasil
-        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
+        return $user;
     }
 
-    public function register(Request $request)
-    {
-        $this->validator($request->all())->validate();
-
-        // Panggil metode create untuk membuat pengguna dan login
-        $this->create($request->all());
-
-        // Tidak perlu mengembalikan redirect di sini, karena sudah ditangani di metode create
-    }
 }

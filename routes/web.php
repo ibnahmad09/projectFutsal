@@ -23,7 +23,10 @@ use App\Http\Controllers\LapanganController;
 */
 
 
-Route::middleware(['auth'])->group(function () {
+Auth::routes(['verify' => true]);
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('user.home.index');
     Route::post('/bookings',[HomeController::class, 'store'])->name('user.bookings.store');
     Route::get('/about', [AboutController::class, 'index'])->name('user.abouts.index');
@@ -39,14 +42,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pengaturan', [ProfileController::class, 'pengaturan'])->name('user.pengaturan');
 
     });
-
-    Route::get('/lapangan-detail', function () {
-        return view('user.lapangan-detail');
-    });
-
-    
-
-
 
     Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
@@ -83,7 +78,6 @@ Route::middleware(['auth'])->group(function () {
         
     });
 
-Auth::routes();
 
 
 
