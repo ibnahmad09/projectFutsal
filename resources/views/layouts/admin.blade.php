@@ -49,13 +49,13 @@
     <!-- Admin Navigation -->
  <div class="flex h-screen overflow-hidden">
     <!-- Cyber Sidebar -->
-    <aside class="w-64 bg-gray-800 hologram-effect flex flex-col border-r border-green-900">
+    <aside class="hidden md:block w-64 bg-gray-800 hologram-effect flex flex-col border-r border-green-900">
         <div class="p-6 border-b border-green-900">
             <h2 class="text-2xl font-bold text-green-400 neon-text">FUTSAL<span class="text-white">ADMIN</span></h2>
         </div>
 
         <nav class="flex-1 p-4 space-y-3">
-            <a  href="{{ route('admin.dashboard') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition cyber-glow">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition cyber-glow">
                 <i class='bx bx-dashboard text-green-400 mr-2'></i>
                 Dashboard
             </a>
@@ -63,7 +63,6 @@
                 <i class='bx bx-calendar-check text-green-400 mr-2'></i>
                 Bookings
             </a>
-
             <a href="{{ route('admin.fields.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-football text-green-400 mr-2'></i>
                 Fields
@@ -88,6 +87,10 @@
         <!-- Cyber Header -->
         <header class="hologram-effect p-4 flex justify-between items-center border-b border-green-900">
             <div class="flex items-center space-x-4">
+                <!-- Tombol Toggle Sidebar untuk Mobile -->
+                <button class="md:hidden text-white" onclick="toggleSidebar()">
+                    <i class='bx bx-menu text-2xl'></i>
+                </button>
                 <div class="relative">
                     <div class="w-3 h-3 bg-green-400 rounded-full absolute -right-0 -top-0 cyber-glow"></div>
                     <div class="w-10 h-10 bg-green-400 rounded-full flex items-center justify-center">
@@ -118,3 +121,10 @@
 
 </body>
 </html>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.querySelector('aside');
+        sidebar.classList.toggle('hidden');
+    }
+</script>

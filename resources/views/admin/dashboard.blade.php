@@ -9,7 +9,7 @@
         <!-- Cyber Dashboard Content -->
         <main class="p-6 space-y-8">
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 <div class="hologram-effect p-4 rounded-xl">
                     <div class="flex justify-between items-center">
                         <div>
@@ -141,7 +141,7 @@
                         <i class='bx bx-line-chart text-green-400 mr-2'></i>
                         Booking Trends
                     </h3>
-                    <canvas id="bookingChart" class="w-full h-64"></canvas>
+                    <canvas id="bookingChart" class="w-full h-48 md:h-64"></canvas>
                 </div>
 
                 <div class="hologram-effect p-6 rounded-xl">
@@ -149,7 +149,7 @@
                         <i class='bx bx-bar-chart-alt text-green-400 mr-2'></i>
                         Field Performance
                     </h3>
-                    <canvas id="fieldChart" class="w-full h-64"></canvas>
+                    <canvas id="fieldChart" class="w-full h-48 md:h-64"></canvas>
                 </div>
             </div>
         </main>

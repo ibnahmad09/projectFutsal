@@ -11,23 +11,8 @@ class FieldController extends Controller
 {
     public function index()
     {
-     $fields = Field::with('images')->paginate(10); // Ganti 10 dengan jumlah item per halaman yang diinginkan
-
-        // Ambil data untuk grafik
-        $fieldPerformanceData = [
-            'labels' => $fields->pluck('name')->toArray(), // Mengambil nama lapangan dari database
-            'data' => $fields->pluck('price_per_hour')->toArray() // Mengambil harga per jam dari database
-        ];
-
-        $fieldTypeData = [
-            'labels' => ['Indoor', 'Outdoor'],
-            'data' => [
-                Field::where('type', 'indoor')->count(), // Menghitung jumlah lapangan indoor
-                Field::where('type', 'outdoor')->count() // Menghitung jumlah lapangan outdoor
-            ]
-        ];
-
-        return view('admin.field', compact('fields', 'fieldPerformanceData', 'fieldTypeData'));
+        $field = Field::first();
+        return view('admin.field', compact('field'));
     }
 
     public function create()

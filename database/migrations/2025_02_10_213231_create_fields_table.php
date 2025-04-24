@@ -13,17 +13,13 @@ return new class extends Migration
     {
         Schema::create('fields', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->default('Lapangan Utama');
             $table->text('description');
-            $table->enum('type', ['indoor', 'outdoor']);
-            $table->string('size'); // Contoh: 20m x 40m
             $table->decimal('price_per_hour', 10, 2);
-            $table->json('facilities'); // ['shower', 'parking', 'locker']
             $table->time('open_time');
             $table->time('close_time');
             $table->boolean('is_available')->default(true);
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

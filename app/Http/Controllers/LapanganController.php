@@ -13,11 +13,8 @@ class LapanganController extends Controller
     // Menampilkan daftar lapangan
     public function index()
     {
-        $fields = Field::where('is_available', true)
-            ->with('images')
-            ->paginate(9);
-
-        return view('user.lapangan', compact('fields'));
+        $field = Field::with('images')->first();
+        return view('user.lapangan', compact('field'));
     }
 
     // Menampilkan detail lapangan

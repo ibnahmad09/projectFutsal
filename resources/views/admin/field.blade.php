@@ -13,9 +13,9 @@
             Field Management
         </h1>
         <div class="flex gap-4">
-            <button class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center">
+            {{-- <button class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center">
                 <i class='bx bx-plus mr-2'></i> <a href="{{ route('admin.fields.create') }}"> Add New Field </a>
-            </button>
+            </button> --}}
             <button class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg flex items-center">
                 <i class='bx bx-filter-alt mr-2'></i> Filters
             </button>
@@ -27,7 +27,7 @@
         <div class="hologram-effect p-4 rounded-xl">
             <div class="flex justify-between items-center">
                 <div>
-                    <div class="text-2xl font-bold">{{ $fields->count() }}</div>
+                    <div class="text-2xl font-bold">{{ $field ? 1 : 0 }}</div>
                     <div class="text-sm text-green-400">Total Fields</div>
                 </div>
                 <i class='bx bx-stats text-3xl text-green-400'></i>
@@ -36,7 +36,7 @@
         <div class="hologram-effect p-4 rounded-xl">
             <div class="flex justify-between items-center">
                 <div>
-                    <div class="text-2xl font-bold">{{ $fields->where('is_available', true)->count() }}</div>
+                    <div class="text-2xl font-bold">{{ $field ? ($field->is_available ? 1 : 0) : 0 }}</div>
                     <div class="text-sm text-green-400">Available Now</div>
                 </div>
                 <i class='bx bx-check-circle text-3xl text-green-400'></i>
@@ -45,7 +45,7 @@
         <div class="hologram-effect p-4 rounded-xl">
             <div class="flex justify-between items-center">
                 <div>
-                    <div class="text-2xl font-bold">{{ number_format($fields->avg('occupancy_rate'), 0) }}%</div>
+                    <div class="text-2xl font-bold">{{ number_format($field ? $field->occupancy_rate : 0, 0) }}%</div>
                     <div class="text-sm text-green-400">Avg Occupancy</div>
                 </div>
                 <i class='bx bx-trending-up text-3xl text-green-400'></i>
@@ -54,7 +54,7 @@
         <div class="hologram-effect p-4 rounded-xl">
             <div class="flex justify-between items-center">
                 <div>
-                    <div class="text-2xl font-bold">Rp{{ number_format($fields->sum('price_per_hour'), 0, ',', '.') }}</div>
+                    <div class="text-2xl font-bold">Rp{{ number_format($field ? $field->price_per_hour : 0, 0, ',', '.') }}</div>
                     <div class="text-sm text-green-400">Daily Revenue</div>
                 </div>
                 <i class='bx bx-coin text-3xl text-green-400'></i>
@@ -64,7 +64,6 @@
 
     <!-- Fields Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-6">
-        @foreach($fields as $field)
         <div class="field-card p-6 rounded-xl">
             <div class="flex justify-between items-start mb-4">
                 <div>
@@ -134,7 +133,6 @@
                 @endif
             </div>
         </div>
-        @endforeach
     </div>
 
     <!-- Detailed Table -->
@@ -171,7 +169,7 @@
                      </tr>
                  </thead>
                  <tbody>
-                     @foreach($fields as $field)
+                     @if($field)
                      <tr class="border-b border-gray-700 hover:bg-gray-800 transition">
                          <td class="p-4 font-bold">{{ $field->name }}</td>
                          <td class="p-4">
@@ -209,14 +207,13 @@
                              </div>
                          </td>
                      </tr>
-                     @endforeach
+                     @else
+                     <tr>
+                         <td colspan="6" class="p-4 text-center text-gray-400">Belum ada lapangan yang tersedia</td>
+                     </tr>
+                     @endif
                  </tbody>
              </table>
-         </div>
-
-         <!-- Pagination -->
-         <div class="p-4 border-t border-green-900">
-             {{ $fields->links() }}
          </div>
      </div>
 
@@ -243,9 +240,16 @@
 </div>
 
 <script>
-// Ambil data dari PHP ke JavaScript
-const fieldPerformanceData = @json($fieldPerformanceData);
-const fieldTypeData = @json($fieldTypeData);
+// Ubah data chart untuk menangani satu lapangan
+const fieldPerformanceData = {
+    labels: ['{{ $field->name ?? 'Lapangan' }}'],
+    data: [{{ $field->bookings_count ?? 0 }}]
+};
+
+const fieldTypeData = {
+    labels: ['{{ $field->type ?? 'Indoor' }}'],
+    data: [1]
+};
 
 // Field Performance Chart
 const fieldPerfCtx = document.getElementById('fieldPerformanceChart').getContext('2d');

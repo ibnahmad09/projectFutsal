@@ -9,6 +9,16 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Tambahkan ikon -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        #mobile-menu {
+            display: none;
+            position: absolute;
+            width: 100%;
+            left: 0;
+            top: 4rem; /* Sesuaikan dengan tinggi navbar */
+            z-index: 1000;
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
     <!-- Navbar -->
@@ -17,57 +27,46 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <a href="{{route('user.home.index')}}" class="flex items-center">
-                    <span class="text-white text-2xl font-bold">FUTSAL<span class="text-green-300">DESA</span>BUKIT<span class="text-green-300">KEMUNING</span></span>
+                    <span class="text-white text-xl font-bold">FUTSAL<span class="text-green-300">DESA</span></span>
                 </a>
-
-                <!-- Menu Desktop -->
-                <div class="hidden md:flex space-x-8">
-                    <a href="{{route('user.lapangan.index')}}" class="text-white hover:text-green-200">Lapangan</a>
-                    <a href="{{ route('user.abouts.index') }}" class="text-white hover:text-green-200">Tentang</a>
-                    <a href="{{route('user.profil.show')}}" class="text-white hover:text-green-200">Profil</a>
-                    <a href="{{ route('user.bookings.index') }}" class="text-white hover:text-green-200">Riwayat Boooking</a>
+    
+                <!-- Tombol Login/Logout & Menu -->
+                <div class="flex items-center space-x-4">
+                    @if (Auth::check())
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="bg-red-500 text-white px-3 py-1.5 rounded-full hover:bg-red-600 transition">
+                                <i class='bx bx-log-out'></i>
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="bg-green-500 text-white px-3 py-1.5 rounded-full hover:bg-green-600 transition">
+                            <i class='bx bx-log-in'></i>
+                        </a>
+                    @endif
+                    
+                    <button class="text-white" id="mobile-menu-button" onclick="toggleMobileMenu()">
+                        <i class='bx bx-menu text-2xl'></i>
+                    </button>
                 </div>
-
-                <!-- Tombol Login atau Logout -->
-                @if (Auth::check())
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="inline">
-                        @csrf
-                        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">
-                            Logout
-                        </button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition">
-                        Masuk/Daftar
-                    </a>
-                @endif
-
-                <!-- Hamburger Menu (Mobile) -->
-                <button class="md:hidden text-white" id="mobile-menu-button">
-                    <i class='bx bx-menu text-2xl'></i>
-                </button>
+            </div>
+    
+            <!-- Menu Mobile -->
+            <div class="md:hidden bg-green-700/95 backdrop-blur-sm" id="mobile-menu" style="display: none;">
+                <div class="flex flex-col space-y-2 px-4 py-2">
+                    <a href="{{route('user.lapangan.index')}}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Lapangan</a>
+                    <a href="{{ route('user.abouts.index') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Tentang</a>
+                    <a href="{{route('user.profil.show')}}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Profil</a>
+                    <a href="{{ route('user.bookings.index') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Riwayat Booking</a>
+                </div>
             </div>
         </div>
-
-        <!-- Menu Mobile -->
-        <div class="md:hidden" id="mobile-menu" style="display: none;">
-            <div class="flex flex-col space-y-2 px-4 py-2">
-                <a href="{{route('user.lapangan.index')}}" class="text-white hover:text-green-200">Lapangan</a>
-                <a href="{{ route('user.abouts.index') }}" class="text-white hover:text-green-200">Tentang</a>
-                <a href="{{route ('user.profil.show')}}" class="text-white hover:text-green-200">Profil</a>
-                <a href="{{ route('user.bookings.index') }}" class="text-white hover:text-green-200">Riwayat Booking</a>
-            </div>
-        </div>
-
-        <script>
-            document.getElementById('mobile-menu-button').onclick = function() {
-                var menu = document.getElementById('mobile-menu');
-                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-            };
-        </script>
     </nav>
 
-    @yield('content')
+    <!-- Content -->
+    <main class="pt-16">
+        @yield('content')
+    </main>
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-12">
@@ -102,5 +101,26 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu.style.display === 'none' || mobileMenu.style.display === '') {
+                mobileMenu.style.display = 'block';
+            } else {
+                mobileMenu.style.display = 'none';
+            }
+        }
+
+        // Tambahkan event listener untuk menutup menu saat mengklik di luar
+        document.addEventListener('click', function(event) {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const button = document.getElementById('mobile-menu-button');
+            
+            if (!button.contains(event.target) && !mobileMenu.contains(event.target)) {
+                mobileMenu.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

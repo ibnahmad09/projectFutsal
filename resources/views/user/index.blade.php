@@ -77,7 +77,7 @@
                             <div class="grid grid-cols-5 gap-4 p-3 bg-white rounded-lg hover:bg-gray-50 transition-all">
                                 <div class="flex items-center">${booking.field_name}</div>
                                 <div class="flex items-center">${booking.user_name}</div>
-                                <div class="flex items-center">${booking.start_time} - ${booking.end_time}</div>
+                                <div class="flex items-center">${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
                                 <div class="flex items-center">
                                     <span class="px-2 py-1 rounded-full text-sm 
                                         ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
@@ -110,7 +110,7 @@
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <div class="font-medium">Waktu</div>
-                                        <div>${booking.start_time} - ${booking.end_time}</div>
+                                        <div>${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <div class="font-medium">Status</div>
@@ -153,6 +153,13 @@
 
         // Update data setiap 1 menit
         setInterval(fetchRealTimeSchedule, 60000);
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
     </script>
 
     <style>
@@ -192,42 +199,44 @@
 
 
     <!-- Daftar Lapangan -->
-    <div class="max-w-7xl mx-auto px-4 py-12">
-        <h2 class="text-3xl font-bold mb-8 text-center">Lapangan Tersedia</h2>
+    <div class="min-h-screen bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 py-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Lapangan Tersedia</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach ($fields as $field)
-                <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition">
-                    @if ($field->images && $field->images->isNotEmpty())
-                        <img src="{{ asset('storage/' . $field->images->first()->image_path) }}" alt="Lapangan"
-                            class="h-48 w-full object-cover">
-                    @else
-                        <img src="https://source.unsplash.com/random/800x600?futsal" alt="Lapangan"
-                            class="h-48 w-full object-cover">
-                    @endif
-                    <div class="p-6">
-                        <div class="flex justify-between items-start mb-4">
-                            <h3 class="text-xl font-bold">{{ $field->name }}</h3>
-                            <span
-                                class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">{{ $field->is_available ? 'Tersedia' : 'Tidak Tersedia' }}</span>
-                        </div>
-                        <div class="flex items-center mb-2">
-                            <i class='bx bx-star text-yellow-400 mr-1'></i>
-                            <span class="font-semibold">{{ $field->rating ?? 'N/A' }}</span>
-                            <span class="text-gray-600 ml-2">({{ $field->reviews_count ?? 0 }} review)</span>
-                        </div>
-                        <p class="text-gray-600 mb-4">{{ $field->description }}</p>
-                        <div class="flex justify-between items-center">
-                            <span
-                                class="text-2xl font-bold text-green-600">Rp{{ number_format($field->price_per_hour, 0, ',', '.') }}/jam</span>
-                            <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-                                onclick="openBookingModal({{ $field->id }})"">
-                                Booking
-                            </button>
+            <div class="grid grid-cols-1 gap-6">
+                @foreach ($fields as $field)
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition">
+                        @if ($field->images && $field->images->isNotEmpty())
+                            <img src="{{ asset('storage/' . $field->images->first()->image_path) }}" alt="Lapangan"
+                                class="h-96 w-full object-cover">
+                        @else
+                            <img src="https://source.unsplash.com/random/1920x1080?futsal" alt="Lapangan"
+                                class="h-96 w-full object-cover">
+                        @endif
+                        <div class="p-8">
+                            <div class="flex justify-between items-start mb-6">
+                                <h3 class="text-3xl font-bold">{{ $field->name }}</h3>
+                                <span
+                                    class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-lg">{{ $field->is_available ? 'Tersedia' : 'Tidak Tersedia' }}</span>
+                            </div>
+                            <div class="flex items-center mb-4">
+                                <i class='bx bx-star text-yellow-400 mr-2 text-2xl'></i>
+                                <span class="font-semibold text-xl">{{ $field->rating ?? 'N/A' }}</span>
+                                <span class="text-gray-600 ml-3 text-lg">({{ $field->reviews_count ?? 0 }} review)</span>
+                            </div>
+                            <p class="text-gray-600 mb-6 text-lg">{{ $field->description }}</p>
+                            <div class="flex justify-between items-center">
+                                <span
+                                    class="text-3xl font-bold text-green-600">Rp{{ number_format($field->price_per_hour, 0, ',', '.') }}/jam</span>
+                                <button class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition text-lg"
+                                    onclick="openBookingModal({{ $field->id }})">
+                                    Booking Sekarang
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
     </div>
 

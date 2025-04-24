@@ -7,22 +7,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Field extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory ;
 
     protected $fillable = [
         'name',
         'description',
-        'type',
-        'size',
         'price_per_hour',
-        'facilities',
         'open_time',
         'close_time',
-        'is_available'
+        'is_available',
     ];
 
     protected $casts = [
-        'facilities' => 'array',
         'open_time' => 'datetime:H:i',
         'close_time' => 'datetime:H:i'
     ];
