@@ -4,75 +4,42 @@
 
 @section('content')
     <!-- Profile Header -->
-    <div class="pt-20 pb-16 bg-gradient-to-r from-green-600 to-green-800">
+    <div class="pt-20 pb-12 bg-gradient-to-r from-green-600 to-green-800">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex flex-col md:flex-row items-center justify-between">
                 <div class="flex items-center mb-6 md:mb-0">
                     <div class="relative">
-                        <img src="https://source.unsplash.com/random/200x200?person"
-                             class="w-32 h-32 rounded-full border-4 border-white shadow-lg">
-                        <button class="absolute bottom-0 right-0 bg-green-500 p-2 rounded-full hover:bg-green-600 transition">
-                            <i class='bx bx-camera text-white text-xl'></i>
-                        </button>
+                        @php
+                            $colors = ['bg-green-600', 'bg-blue-600', 'bg-purple-600', 'bg-pink-600', 'bg-indigo-600'];
+                            $colorIndex = ord(Str::lower(Str::substr($user->name, 0, 1))) % count($colors);
+                            $colorClass = $colors[$colorIndex];
+                        @endphp
+
+                        <div class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg {{ $colorClass }} flex items-center justify-center text-white text-4xl font-bold">
+                            {{ Str::substr($user->name, 0, 1) }}
+                        </div>
                     </div>
                     <div class="ml-6">
-                        <h1 class="text-3xl font-bold text-white">{{ $user->name }}</h1>
-                        <p class="text-green-200">Member sejak {{ $user->created_at->format('Y') }}</p>
+                        <h1 class="text-2xl md:text-3xl font-bold text-white">{{ $user->name }}</h1>
+                        <p class="text-green-200 text-sm md:text-base">Member sejak {{ $user->created_at->format('Y') }}</p>
                     </div>
                 </div>
-                <div class="flex space-x-4">
-                    <a href="{{ route('user.profil.edit') }}" 
-                        class="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-white hover:bg-white/30 transition">
-                        <i class='bx bx-edit mr-2'></i>Edit Profil
-                    </a>
-                    <a href="{{ route('user.pengaturan') }}" 
-                        class="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-white hover:bg-white/30 transition">
-                        <i class='bx bx-edit mr-2'></i>Pengaturan
-                    </a>
-                </div>
+                <a href="{{ route('user.profil.edit') }}" 
+                    class="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-white hover:bg-white/30 transition text-sm md:text-base">
+                    <i class='bx bx-edit mr-2'></i>Edit Profil
+                </a>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <h2 class="text-2xl font-bold mb-6">Profil Anda</h2>
-
-        <form method="POST" action="">
-            @csrf
-            @method('PUT')
-
-            <div class="mb-4">
-                <label for="address" class="block text-gray-600 mb-1">Alamat</label>
-                <input id="address" type="text" class="form-control @error('address') is-invalid @enderror" 
-                       name="address" value="{{ old('address', $user->address) }}" required>
-                @error('address')
-                    <span class="invalid-feedback" role="alert">
-                        <strong>{{ $message }}</strong>
-                    </span>
-                @enderror
-            </div>
-
-            <div class="mb-4">
-                <label for="phone_number" class="block text-gray-600 mb-1">Nomor Telepon</label>
-                <input id="phone_number" type="text" class="form-control @error('phone_number') is-invalid @enderror" 
-                       name="phone_number" value="{{ old('phone_number', $user->phone_number) }}" required>
-                @error('phone_number')
-                    <span class="invalid-feedback" role="alert">
-                        <strong>{{ $message }}</strong>
-                    </span>
-                @enderror
-            </div>
-
-            <button type="submit" class="btn btn-primary">Simpan</button>
-        </form>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Kolom Kiri -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Info Akun -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <h2 class="text-xl font-bold mb-6 flex items-center">
                         <i class='bx bx-info-circle mr-2 text-green-600'></i>
                         Informasi Akun
                     </h2>
@@ -97,32 +64,23 @@
                 </div>
 
                 <!-- Statistik -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-green-600 text-white p-6 rounded-xl">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm">Total Booking</p>
-                                <p class="text-3xl font-bold">{{ $user->bookings->count() }}</p>
+                                <p class="text-2xl font-bold">{{ $user->bookings->count() }}</p>
                             </div>
-                            <i class='bx bx-calendar-check text-4xl opacity-75'></i>
+                            <i class='bx bx-calendar-check text-3xl opacity-75'></i>
                         </div>
                     </div>
                     <div class="bg-green-500 text-white p-6 rounded-xl">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm">Member Aktif</p>
-                                <p class="text-3xl font-bold">{{ now()->diffInYears($user->created_at) }} Tahun</p>
+                                <p class="text-2xl font-bold">{{ now()->diffInYears($user->created_at) }} Tahun</p>
                             </div>
-                            <i class='bx bx-time-five text-4xl opacity-75'></i>
-                        </div>
-                    </div>
-                    <div class="bg-green-400 text-white p-6 rounded-xl">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm">Rating</p>
-                                <p class="text-3xl font-bold">4.8</p>
-                            </div>
-                            <i class='bx bx-star text-4xl opacity-75'></i>
+                            <i class='bx bx-time-five text-3xl opacity-75'></i>
                         </div>
                     </div>
                 </div>
@@ -132,7 +90,7 @@
             <div class="space-y-6">
                 <!-- Keamanan -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <h2 class="text-xl font-bold mb-6 flex items-center">
                         <i class='bx bx-shield-alt mr-2 text-green-600'></i>
                         Keamanan
                     </h2>
@@ -143,32 +101,56 @@
                                 {{ $user->email_verified_at ? 'Terverifikasi' : 'Belum Terverifikasi' }}
                             </span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span>Kata Sandi</span>
-                            <button class="text-green-600 hover:text-green-700">
-                                Ubah
-                            </button>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span>2FA</span>
-                            <label class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                                <span class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></span>
-                            </label>
-                        </div>
+                        
+                        <!-- Form Ubah Password -->
+                        <form method="POST" action="{{ route('user.profil.update-password') }}">
+                            @csrf
+                            @method('PUT')
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-gray-600 mb-1">Password Saat Ini</label>
+                                    <input type="password" name="current_password" required
+                                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-600 mb-1">Password Baru</label>
+                                    <input type="password" name="password" required
+                                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-600 mb-1">Konfirmasi Password Baru</label>
+                                    <input type="password" name="password_confirmation" required
+                                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                                </div>
+                                
+                                <button type="submit" 
+                                        class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                                    Ubah Password
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <style>
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #059669;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #059669;
-        }
-    </style>
+    @if($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6">
+            {{ session('success') }}
+        </div>
+    @endif
 @endsection

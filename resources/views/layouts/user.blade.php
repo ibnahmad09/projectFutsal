@@ -18,6 +18,15 @@
             top: 4rem; /* Sesuaikan dengan tinggi navbar */
             z-index: 1000;
         }
+        .avatar-inisial {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #16a34a; /* Warna hijau */
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
