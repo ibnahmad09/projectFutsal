@@ -9,12 +9,21 @@
 
 
 
+    <div class="bg-blue-100 p-4 rounded-lg mb-6">
+        @if(auth()->user()->member && auth()->user()->member->is_active)
+            <p>Anda sedang menjalani proses member. Minggu ke-{{ auth()->user()->member->weeks_completed }} dari 4 minggu.</p>
+        @else
+            <p>Jadilah member dan dapatkan gratis bermain satu kali! <a href="https://wa.me/082226866782" class="text-blue-600">Ajukan sekarang via WA Admin</a></p>
+        @endif
+    </div>
     <!-- Hero Section -->
     <div class="pt-20 pb-12 bg-gradient-to-r from-green-600 to-green-800">
         <div class="max-w-7xl mx-auto px-4">
             <div class="text-center text-white">
                 <h1 class="text-4xl md:text-5xl font-bold mb-4">Sewa Lapangan Futsal Desa</h1>
                 <p class="text-lg mb-8">Booking lapangan favoritmu kapan saja, dimana saja!</p>
+
+
 
                 <!-- Search Form -->
                 <div class="max-w-2xl mx-auto bg-white rounded-lg p-4 shadow-lg">
@@ -70,7 +79,7 @@
                 .then(data => {
                     const desktopContainer = document.getElementById('real-time-schedule');
                     const mobileContainer = document.getElementById('real-time-schedule-mobile');
-                    
+
                     if (data.length > 0) {
                         // Desktop View
                         desktopContainer.innerHTML = data.map(booking => `
@@ -79,7 +88,7 @@
                                 <div class="flex items-center">${booking.user_name}</div>
                                 <div class="flex items-center">${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
                                 <div class="flex items-center">
-                                    <span class="px-2 py-1 rounded-full text-sm 
+                                    <span class="px-2 py-1 rounded-full text-sm
                                         ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                                         booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                         'bg-red-100 text-red-800'}">
@@ -87,7 +96,7 @@
                                     </span>
                                 </div>
                                 <div class="flex items-center">
-                                    <span class="px-2 py-1 rounded-full text-sm 
+                                    <span class="px-2 py-1 rounded-full text-sm
                                         ${booking.type === 'ongoing' ? 'bg-blue-100 text-blue-800' :
                                         'bg-purple-100 text-purple-800'}">
                                         ${booking.type === 'ongoing' ? 'Sedang Berjalan' : 'Akan Datang'}
@@ -115,7 +124,7 @@
                                     <div class="flex justify-between items-center">
                                         <div class="font-medium">Status</div>
                                         <div>
-                                            <span class="px-2 py-1 rounded-full text-sm 
+                                            <span class="px-2 py-1 rounded-full text-sm
                                                 ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                                                 booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                                 'bg-red-100 text-red-800'}">
@@ -126,7 +135,7 @@
                                     <div class="flex justify-between items-center">
                                         <div class="font-medium">Tipe</div>
                                         <div>
-                                            <span class="px-2 py-1 rounded-full text-sm 
+                                            <span class="px-2 py-1 rounded-full text-sm
                                                 ${booking.type === 'ongoing' ? 'bg-blue-100 text-blue-800' :
                                                 'bg-purple-100 text-purple-800'}">
                                                 ${booking.type === 'ongoing' ? 'Sedang Berjalan' : 'Akan Datang'}
@@ -275,5 +284,5 @@
     </div>
 
     <!-- Real-time Schedule Section -->
- 
+
 @endsection

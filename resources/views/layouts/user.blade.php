@@ -38,10 +38,15 @@
                 <a href="{{route('user.home.index')}}" class="flex items-center">
                     <span class="text-white text-xl font-bold">FUTSAL<span class="text-green-300">DESA</span></span>
                 </a>
-    
+
                 <!-- Tombol Login/Logout & Menu -->
                 <div class="flex items-center space-x-4">
                     @if (Auth::check())
+                        @if(auth()->user()->member && auth()->user()->member->is_active)
+                            <span class="bg-green-600 text-white px-4 py-1.5 rounded-full">Member</span>
+                        @else
+                            <span class="bg-gray-600 text-white px-4 py-1.5 rounded-full">Non-Member</span>
+                        @endif
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="inline">
                             @csrf
                             <button type="submit" class="bg-red-500 text-white px-3 py-1.5 rounded-full hover:bg-red-600 transition">
@@ -53,13 +58,13 @@
                             <i class='bx bx-log-in'></i>
                         </a>
                     @endif
-                    
+
                     <button class="text-white" id="mobile-menu-button" onclick="toggleMobileMenu()">
                         <i class='bx bx-menu text-2xl'></i>
                     </button>
                 </div>
             </div>
-    
+
             <!-- Menu Mobile -->
             <div class="md:hidden bg-green-700/95 backdrop-blur-sm" id="mobile-menu" style="display: none;">
                 <div class="flex flex-col space-y-2 px-4 py-2">
@@ -125,7 +130,7 @@
         document.addEventListener('click', function(event) {
             const mobileMenu = document.getElementById('mobile-menu');
             const button = document.getElementById('mobile-menu-button');
-            
+
             if (!button.contains(event.target) && !mobileMenu.contains(event.target)) {
                 mobileMenu.style.display = 'none';
             }

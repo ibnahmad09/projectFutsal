@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\LapanganController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\MemberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,10 +72,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'update' => 'admin.bookings.update',
             'destroy' => 'admin.bookings.destroy'
         ]);
-  
+
         Route::post('/bookings/{id}/accept', [AdminController::class, 'acceptBooking'])->name('admin.bookings.accept');
         Route::post('/bookings/{id}/reject', [AdminController::class, 'rejectBooking'])->name('admin.bookings.reject');
-       
+
 
         Route::prefix('reports')->group(function () {
             Route::get('/create', [ReportController::class, 'create'])->name('admin.reports.create');
@@ -92,6 +93,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/users/{user}', [UserController::class, 'destroyUser'])->name('admin.users.destroy');
 
         Route::get('/analytics', [AnalyticsController::class, 'index'])->name('admin.analytics');
+
+        Route::resource('members', MemberController::class);
+        Route::post('members/{member}/update-weeks', [\App\Http\Controllers\Admin\MemberController::class, 'updateWeeksCompleted'])->name('admin.members.update-weeks');
     });
 
 

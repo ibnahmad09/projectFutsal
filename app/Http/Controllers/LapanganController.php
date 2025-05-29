@@ -21,10 +21,10 @@ class LapanganController extends Controller
     public function show(Field $field)
     {
         $field->load('images');
-        
+
         // Cek ketersediaan lapangan
         $isAvailable = $field->is_available;
-        
+
         // Ambil jadwal booking hari ini
         $todayBookings = Booking::where('field_id', $field->id)
             ->whereDate('booking_date', today())
@@ -42,7 +42,7 @@ class LapanganController extends Controller
                 'required',
                 'date_format:H:i',
                 function ($attribute, $value, $fail) use ($request) {
-                    if ($request->booking_date == now()->format('Y-m-d') && 
+                    if ($request->booking_date == now()->format('Y-m-d') &&
                         Carbon\Carbon::parse($value)->lt(now()->addHour()->startOfHour())) {
                         $fail('Waktu booking tidak boleh lebih awal dari waktu sekarang');
                     }
@@ -56,21 +56,31 @@ class LapanganController extends Controller
         $start = Carbon::parse($request->start_time);
         $end = $start->copy()->addHours($request->duration);
 
-        // Cek ketersediaan waktu
-        $isAvailable = Booking::where('field_id', $field->id)
-            ->whereDate('booking_date', $request->booking_date)
-            ->where(function($query) use ($start, $end) {
-                $query->whereBetween('start_time', [$start->format('H:i'), $end->format('H:i')])
-                    ->orWhereBetween('end_time', [$start->format('H:i'), $end->format('H:i')]);
-            })
-            ->doesntExist();
+        // Cek apakah user adalah member
+        $isMember = Auth::user()->member && Auth::user()->member->is_active;
 
-        if (!$isAvailable) {
-            return back()->withErrors(['time' => 'Waktu yang dipilih sudah terbooking!']);
+        // Jika user adalah member, berikan prioritas
+        if ($isMember) {
+            // Cek ketersediaan waktu untuk member
+            $isAvailable = Booking::where('field_id', $field->id)
+                ->whereDate('booking_date', $request->booking_date)
+                ->where(function($query) use ($start, $end) {
+                    $query->whereBetween('start_time', [$start->format('H:i'), $end->format('H:i')])
+                        ->orWhereBetween('end_time', [$start->format('H:i'), $end->format('H:i')]);
+                })
+                ->doesntExist();
+
+            if (!$isAvailable) {
+                return back()->withErrors(['time' => 'Waktu yang dipilih sudah terbooking!']);
+            }
         }
 
-        // Hitung total harga
-        $totalPrice = $field->price_per_hour * $request->duration;
+        // Jika user adalah member dan sudah menyelesaikan 4 minggu
+        if ($isMember && Auth::user()->member->weeks_completed >= 4) {
+            $totalPrice = 0; // Gratis bermain satu kali
+        } else {
+            $totalPrice = $field->price_per_hour * $request->duration;
+        }
 
         // Buat booking
         $booking = Auth::user()->bookings()->create([

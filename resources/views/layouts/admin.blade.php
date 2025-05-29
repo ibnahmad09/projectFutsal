@@ -61,19 +61,23 @@
             </a>
             <a href="{{ route('admin.bookings.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-calendar-check text-green-400 mr-2'></i>
-                Bookings
+                Booking
+            </a>
+            <a href="{{ route('members.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
+                <i class='bx bx-member text-green-400 mr-2'></i>
+                Member
             </a>
             <a href="{{ route('admin.fields.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-football text-green-400 mr-2'></i>
-                Fields
+                Field
             </a>
             <a href="{{ route('admin.analytics') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-line-chart text-green-400 mr-2'></i>
-                Analytics
+                Analytic
             </a>
             <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-user text-green-400 mr-2'></i>
-                Users
+                User
             </a>
             <a href="{{ route('admin.reports.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-file text-green-400 mr-2'></i>

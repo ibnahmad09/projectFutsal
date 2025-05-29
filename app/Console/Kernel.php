@@ -21,6 +21,10 @@ class Kernel extends ConsoleKernel
                     'expires_at' => now()
                 ]);
         })->everyFiveMinutes();
+
+        $schedule->call(function () {
+            \App\Http\Controllers\Admin\MemberController::checkMissedSchedule();
+        })->daily();
     }
 
     /**

@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Booking;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Member;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -56,5 +57,10 @@ class User extends Authenticatable implements MustVerifyEmail
      public function bookings()
      {
          return $this->hasMany(Booking::class);
+     }
+
+     public function member()
+     {
+         return $this->hasOne(Member::class);
      }
 }
