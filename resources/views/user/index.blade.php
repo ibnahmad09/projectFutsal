@@ -74,87 +74,102 @@
 
     <script>
         function fetchRealTimeSchedule() {
-            fetch('/api/real-time-schedule')
-                .then(response => response.json())
-                .then(data => {
-                    const desktopContainer = document.getElementById('real-time-schedule');
-                    const mobileContainer = document.getElementById('real-time-schedule-mobile');
+            fetch('/api/real-time-schedule', {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const desktopContainer = document.getElementById('real-time-schedule');
+                const mobileContainer = document.getElementById('real-time-schedule-mobile');
 
-                    if (data.length > 0) {
-                        // Desktop View
-                        desktopContainer.innerHTML = data.map(booking => `
-                            <div class="grid grid-cols-5 gap-4 p-3 bg-white rounded-lg hover:bg-gray-50 transition-all">
-                                <div class="flex items-center">${booking.field_name}</div>
-                                <div class="flex items-center">${booking.user_name}</div>
-                                <div class="flex items-center">${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
-                                <div class="flex items-center">
-                                    <span class="px-2 py-1 rounded-full text-sm
-                                        ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-red-100 text-red-800'}">
-                                        ${booking.status}
-                                    </span>
+                if (data.length > 0) {
+                    // Desktop View
+                    desktopContainer.innerHTML = data.map(booking => `
+                        <div class="grid grid-cols-5 gap-4 p-3 bg-white rounded-lg hover:bg-gray-50 transition-all">
+                            <div class="flex items-center">${booking.field_name}</div>
+                            <div class="flex items-center">${booking.user_name}</div>
+                            <div class="flex items-center">${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
+                            <div class="flex items-center">
+                                <span class="px-2 py-1 rounded-full text-sm
+                                    ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                    booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'}">
+                                    ${booking.status}
+                                </span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="px-2 py-1 rounded-full text-sm
+                                    ${booking.type === 'ongoing' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-purple-100 text-purple-800'}">
+                                    ${booking.type === 'ongoing' ? 'Sedang Berjalan' : 'Akan Datang'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    // Mobile View
+                    mobileContainer.innerHTML = data.map(booking => `
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <div class="font-medium">Lapangan</div>
+                                    <div>${booking.field_name}</div>
                                 </div>
-                                <div class="flex items-center">
-                                    <span class="px-2 py-1 rounded-full text-sm
-                                        ${booking.type === 'ongoing' ? 'bg-blue-100 text-blue-800' :
-                                        'bg-purple-100 text-purple-800'}">
-                                        ${booking.type === 'ongoing' ? 'Sedang Berjalan' : 'Akan Datang'}
-                                    </span>
+                                <div class="flex justify-between items-center">
+                                    <div class="font-medium">Pemesan</div>
+                                    <div>${booking.user_name}</div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div class="font-medium">Waktu</div>
+                                    <div>${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div class="font-medium">Status</div>
+                                    <div>
+                                        <span class="px-2 py-1 rounded-full text-sm
+                                            ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-red-100 text-red-800'}">
+                                            ${booking.status}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div class="font-medium">Tipe</div>
+                                    <div>
+                                        <span class="px-2 py-1 rounded-full text-sm
+                                            ${booking.type === 'ongoing' ? 'bg-blue-100 text-blue-800' :
+                                            'bg-purple-100 text-purple-800'}">
+                                            ${booking.type === 'ongoing' ? 'Sedang Berjalan' : 'Akan Datang'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        `).join('');
-
-                        // Mobile View
-                        mobileContainer.innerHTML = data.map(booking => `
-                            <div class="bg-white p-4 rounded-lg shadow-sm">
-                                <div class="space-y-3">
-                                    <div class="flex justify-between items-center">
-                                        <div class="font-medium">Lapangan</div>
-                                        <div>${booking.field_name}</div>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <div class="font-medium">Pemesan</div>
-                                        <div>${booking.user_name}</div>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <div class="font-medium">Waktu</div>
-                                        <div>${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <div class="font-medium">Status</div>
-                                        <div>
-                                            <span class="px-2 py-1 rounded-full text-sm
-                                                ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                                booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-red-100 text-red-800'}">
-                                                ${booking.status}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <div class="font-medium">Tipe</div>
-                                        <div>
-                                            <span class="px-2 py-1 rounded-full text-sm
-                                                ${booking.type === 'ongoing' ? 'bg-blue-100 text-blue-800' :
-                                                'bg-purple-100 text-purple-800'}">
-                                                ${booking.type === 'ongoing' ? 'Sedang Berjalan' : 'Akan Datang'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('');
-                    } else {
-                        desktopContainer.innerHTML =
-                            '<div class="text-center py-4 text-gray-500">Tidak ada jadwal saat ini</div>';
-                        mobileContainer.innerHTML =
-                            '<div class="text-center py-4 text-gray-500">Tidak ada jadwal saat ini</div>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+                        </div>
+                    `).join('');
+                } else {
+                    desktopContainer.innerHTML =
+                        '<div class="text-center py-4 text-gray-500">Tidak ada jadwal saat ini</div>';
+                    mobileContainer.innerHTML =
+                        '<div class="text-center py-4 text-gray-500">Tidak ada jadwal saat ini</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const desktopContainer = document.getElementById('real-time-schedule');
+                const mobileContainer = document.getElementById('real-time-schedule-mobile');
+                desktopContainer.innerHTML = '<div class="text-center py-4 text-red-500">Gagal memuat data jadwal</div>';
+                mobileContainer.innerHTML = '<div class="text-center py-4 text-red-500">Gagal memuat data jadwal</div>';
+            });
         }
 
         // Fetch data pertama kali

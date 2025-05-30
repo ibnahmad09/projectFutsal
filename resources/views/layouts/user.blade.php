@@ -9,6 +9,7 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Tambahkan ikon -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         #mobile-menu {
             display: none;
@@ -72,6 +73,7 @@
                     <a href="{{ route('user.abouts.index') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Tentang</a>
                     <a href="{{route('user.profil.show')}}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Profil</a>
                     <a href="{{ route('user.bookings.index') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Riwayat Booking</a>
+                    <a href="{{ route('user.member') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Member</a>
                 </div>
             </div>
         </div>

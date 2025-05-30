@@ -12,6 +12,7 @@ use App\Http\Controllers\LapanganController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\User\MemberController as UserMemberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,8 +51,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/profil/update', [ProfileController::class, 'update'])->name('update.profile');
     Route::get('/pengaturan', [ProfileController::class, 'pengaturan'])->name('user.pengaturan');
     Route::put('/profil/ubah-password', [ProfileController::class, 'updatePassword'])->name('user.profil.update-password');
-
-    });
+    Route::get('/member/use', [UserMemberController::class, 'useMember'])->name('user.member.use');
+    Route::post('/member/store', [UserMemberController::class, 'storeMemberBooking'])->name('user.member.store');
+    Route::get('/member', [App\Http\Controllers\User\MemberController::class, 'index'])->name('user.member');
+});
 
     Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');

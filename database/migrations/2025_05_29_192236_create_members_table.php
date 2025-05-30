@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->integer('weeks_completed')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_member_used')->default(false);
             $table->timestamps();
         });
     }
