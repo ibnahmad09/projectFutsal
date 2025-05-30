@@ -259,7 +259,7 @@ async function submitBooking(e) {
         });
 
         const data = await response.json();
-        
+
         // Jika response tidak sukses
         if (!response.ok) {
             throw new Error(data.message || 'Terjadi kesalahan sistem');

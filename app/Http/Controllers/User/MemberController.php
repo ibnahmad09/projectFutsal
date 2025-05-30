@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Member;
 use App\Models\Booking;
+use Carbon\Carbon;
 
 class MemberController extends Controller
 {
@@ -47,18 +48,37 @@ class MemberController extends Controller
 
     public function storeMemberBooking(Request $request)
     {
-        $user = Auth::user();
-        $member = $user->member;
+        try {
+            $user = Auth::user();
+            $member = $user->member;
 
-        // Cek apakah user sudah menyelesaikan 4 minggu dan belum menggunakan fitur member
-        if ($member && $member->weeks_completed >= 4 && !$member->is_member_used) {
+            // Cek apakah user sudah menyelesaikan 4 minggu dan belum menggunakan fitur member
+            if (!$member || $member->weeks_completed < 4 || $member->is_member_used) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda belum memenuhi syarat untuk menggunakan fitur member.'
+                ], 400);
+            }
+
+            // Validasi input
+            $request->validate([
+                'field_id' => 'required|exists:fields,id',
+                'booking_date' => 'required|date|after_or_equal:today',
+                'start_time' => 'required|date_format:H:i',
+                'duration' => 'required|integer|min:1|max:4'
+            ]);
+
+            // Hitung waktu selesai
+            $end_time = Carbon::parse($request->start_time)->addHours($request->duration)->format('H:i');
+
             // Buat booking gratis
             $booking = Booking::create([
+                'booking_code' => 'BOOK-' . strtoupper(uniqid()), // Generate booking code
                 'user_id' => $user->id,
                 'field_id' => $request->field_id,
                 'booking_date' => $request->booking_date,
                 'start_time' => $request->start_time,
-                'end_time' => $request->end_time,
+                'end_time' => $end_time,
                 'duration' => $request->duration,
                 'total_price' => 0,
                 'status' => 'pending',
@@ -68,9 +88,16 @@ class MemberController extends Controller
             // Tandai fitur member sudah digunakan
             $member->update(['is_member_used' => true]);
 
-            return redirect()->route('user.member')->with('success', 'Booking gratis berhasil dibuat!');
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking gratis berhasil dibuat!'
+            ]);
+        } catch (\Exception $e) {
+            // Tangkap semua exception dan kembalikan pesan error
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
         }
-
-        return redirect()->route('user.member')->with('error', 'Anda belum memenuhi syarat untuk menggunakan fitur member.');
     }
 }
