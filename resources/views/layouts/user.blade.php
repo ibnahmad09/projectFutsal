@@ -40,6 +40,15 @@
                     <span class="text-white text-xl font-bold">FUTSAL<span class="text-green-300">DESA</span></span>
                 </a>
 
+                <!-- Menu Desktop -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="{{route('user.lapangan.index')}}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Lapangan</a>
+                    <a href="{{ route('user.abouts.index') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Tentang</a>
+                    <a href="{{route('user.profil.show')}}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Profil</a>
+                    <a href="{{ route('user.bookings.index') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Riwayat Booking</a>
+                    <a href="{{ route('user.member') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Member</a>
+                </div>
+
                 <!-- Tombol Login/Logout & Menu -->
                 <div class="flex items-center space-x-4">
                     @if (Auth::check())
@@ -60,7 +69,7 @@
                         </a>
                     @endif
 
-                    <button class="text-white" id="mobile-menu-button" onclick="toggleMobileMenu()">
+                    <button class="text-white md:hidden" id="mobile-menu-button" onclick="toggleMobileMenu()">
                         <i class='bx bx-menu text-2xl'></i>
                     </button>
                 </div>
