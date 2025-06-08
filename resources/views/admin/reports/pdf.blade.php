@@ -20,8 +20,16 @@
         <h2>Financial Summary</h2>
         <table>
             <tr>
-                <th>Total Revenue</th>
+                <th>Total Revenue (Online + Manual)</th>
                 <td class="text-right">Rp{{ number_format($data['total_revenue'], 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <th>Pendapatan Online</th>
+                <td class="text-right">Rp{{ number_format($data['online_revenue'], 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <th>Pendapatan Manual</th>
+                <td class="text-right">Rp{{ number_format($data['manual_revenue'], 0, ',', '.') }}</td>
             </tr>
             @foreach($data['payment_statuses'] as $status => $count)
             <tr>
@@ -38,6 +46,7 @@
                     <th>Date</th>
                     <th class="text-right">Amount</th>
                     <th>Status</th>
+                    <th>Type</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,6 +55,7 @@
                     <td>{{ $transaction->payment_date->format('d M Y') }}</td>
                     <td class="text-right">Rp{{ number_format($transaction->amount, 0, ',', '.') }}</td>
                     <td>{{ ucfirst($transaction->status) }}</td>
+                    <td>{{ isset($transaction->is_manual) ? 'Manual' : 'Online' }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -90,4 +100,4 @@
 
     <!-- Add similar sections for booking and user reports -->
 </body>
-</html> 
+</html>

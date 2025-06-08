@@ -61,15 +61,15 @@
                     <div class="space-y-3">
                         <div>
                             <p class="text-gray-400">Nama Lapangan:</p>
-                            <p class="font-medium">{{ $booking->field->name }}</p>
+                            <p class="font-medium">{{ $booking->field ? $booking->field->name : 'Lapangan tidak tersedia' }}</p>
                         </div>
                         <div>
                             <p class="text-gray-400">Lokasi:</p>
-                            <p class="font-medium">{{ $booking->field->location }}</p>
+                            <p class="font-medium">{{ $booking->field ? $booking->field->location : 'Lokasi tidak tersedia' }}</p>
                         </div>
                         <div>
                             <p class="text-gray-400">Harga per Jam:</p>
-                            <p class="font-medium">Rp{{ number_format($booking->field->price_per_hour, 0, ',', '.') }}</p>
+                            <p class="font-medium">Rp{{ $booking->field ? number_format($booking->field->price_per_hour, 0, ',', '.') : '0' }}</p>
                         </div>
                     </div>
                 </div>
@@ -104,8 +104,14 @@
                         <i class='bx bx-user text-xl'></i>
                     </div>
                     <div>
-                        <p class="font-medium">{{ $booking->user->name }}</p>
-                        <p class="text-gray-400">{{ $booking->user->phone_number }}</p>
+                        @if($booking->is_manual_booking)
+                            <p class="font-medium">{{ $booking->customer_name }}</p>
+                            <p class="text-gray-400">{{ $booking->customer_phone }}</p>
+                            <span class="text-xs text-yellow-400 mt-1">(Booking Manual)</span>
+                        @else
+                            <p class="font-medium">{{ $booking->user ? $booking->user->name : 'Customer tidak tersedia' }}</p>
+                            <p class="text-gray-400">{{ $booking->user ? $booking->user->phone_number : 'Nomor telepon tidak tersedia' }}</p>
+                        @endif
                     </div>
                 </div>
             </div>

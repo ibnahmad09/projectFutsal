@@ -23,10 +23,18 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
-        // Hitung revenue hari ini
-        $todayRevenue = Payment::whereDate('payment_date', today())
+        // Hitung revenue hari ini (online + manual)
+        $todayOnlineRevenue = Payment::whereDate('payment_date', today())
             ->where('status', 'success')
             ->sum('amount');
+
+        $todayManualRevenue = Booking::whereDate('booking_date', today())
+            ->where('is_manual_booking', true)
+            ->where('status', 'confirmed')
+            ->sum('total_price');
+
+        $todayRevenue = $todayOnlineRevenue + $todayManualRevenue;
+
         // Hitung active users (yang melakukan booking dalam 30 hari terakhir)
         $activeUsers = User::whereHas('bookings', function($query) {
             $query->where('created_at', '>=', now()->subDays(30));
@@ -52,9 +60,8 @@ class AdminController extends Controller
             'data' => Field::withCount('bookings')->pluck('bookings_count')->toArray()
         ];
 
-        return view('admin.dashboard', compact('totalBookings', 'totalFields', 'recentBookings', 'todayRevenue', 'activeUsers',
-        'fieldOccupancy', 'bookingTrends',
-            'fieldPerformanceData'));
+        return view('admin.dashboard', compact('totalBookings', 'totalFields', 'recentBookings', 'todayRevenue', 'activeUsers', 'todayRevenue',
+        'todayOnlineRevenue','todayManualRevenue','fieldOccupancy', 'bookingTrends','fieldPerformanceData'));
     }
 
     public function bookings()

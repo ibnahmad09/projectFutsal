@@ -10,6 +10,7 @@
         <main class="p-6 space-y-8">
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <!-- Total Bookings Card -->
                 <div class="hologram-effect p-4 rounded-xl">
                     <div class="flex justify-between items-center">
                         <div>
@@ -23,11 +24,16 @@
                     </div>
                 </div>
 
+                <!-- Revenue Card -->
                 <div class="hologram-effect p-4 rounded-xl">
                     <div class="flex justify-between items-center">
                         <div>
                             <div class="text-2xl font-bold">Rp{{ number_format($todayRevenue, 0, ',', '.') }}</div>
-                            <div class="text-sm text-green-400">Today's Revenue</div>
+                            <div class="text-sm text-green-400">Total Pendapatan Hari Ini</div>
+                            <div class="text-xs text-gray-400 mt-1">
+                                <span class="text-green-400">Online:</span> Rp{{ number_format($todayOnlineRevenue, 0, ',', '.') }} |
+                                <span class="text-green-400">Manual:</span> Rp{{ number_format($todayManualRevenue, 0, ',', '.') }}
+                            </div>
                         </div>
                         <i class='bx bx-credit-card text-3xl text-green-400'></i>
                     </div>
@@ -36,6 +42,7 @@
                     </div>
                 </div>
 
+                <!-- Active Users Card -->
                 <div class="hologram-effect p-4 rounded-xl">
                     <div class="flex justify-between items-center">
                         <div>
@@ -49,16 +56,17 @@
                     </div>
                 </div>
 
+                <!-- Field Occupancy Card -->
                 <div class="hologram-effect p-4 rounded-xl">
                     <div class="flex justify-between items-center">
                         <div>
                             <div class="text-2xl font-bold">{{ $fieldOccupancy }}%</div>
                             <div class="text-sm text-green-400">Field Occupancy</div>
                         </div>
-                        <i class='bx bx-trending-up text-3xl text-green-400'></i>
+                        <i class='bx bx-stats text-3xl text-green-400'></i>
                     </div>
                     <div class="mt-2 h-1 bg-gray-700">
-                        <div class="h-full bg-green-400 w-4/5"></div>
+                        <div class="h-full bg-green-400" style="width: {{ $fieldOccupancy }}%"></div>
                     </div>
                 </div>
             </div>
@@ -68,24 +76,24 @@
                 <!-- Recent Bookings -->
                 <div class="lg:col-span-2 hologram-effect p-6 rounded-xl">
                     <h3 class="text-xl font-bold mb-4 flex items-center">
-                        <i class='bx bx-time-five text-green-400 mr-2'></i>
+                        <i class='bx bx-calendar-check text-green-400 mr-2'></i>
                         Recent Bookings
                     </h3>
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead class="bg-gray-800">
                                 <tr>
-                                    <th class="p-3 text-left">Booking Code</th>
+                                    <th class="p-3 text-left">Kode</th>
                                     <th class="p-3 text-left">Customer</th>
-                                    <th class="p-3 text-left">Field</th>
-                                    <th class="p-3 text-left">Time</th>
+                                    <th class="p-3 text-left">Lapangan</th>
+                                    <th class="p-3 text-left">Waktu</th>
                                     <th class="p-3 text-left">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($recentBookings as $booking)
                                 <tr class="border-b border-gray-700 hover:bg-gray-800">
-                                    <td class="p-3">{{ $booking->booking_code }}</td>
+                                    <td class="p-3 font-mono text-green-400">{{ $booking->booking_code }}</td>
                                     <td class="p-3">
                                         @if($booking->is_manual_booking)
                                             {{ $booking->customer_name }}
@@ -93,13 +101,16 @@
                                             {{ $booking->user ? $booking->user->name : 'User tidak tersedia' }}
                                         @endif
                                     </td>
-                                    <td class="p-3">{{ $booking->field->name }}</td>
-                                    <td class="p-3">{{ date('H:i', strtotime($booking->start_time)) }} - {{ date('H:i', strtotime($booking->end_time)) }}</td>
+                                    <td class="p-3">{{ $booking->field ? $booking->field->name : 'Lapangan tidak tersedia' }}</td>
                                     <td class="p-3">
-                                        <span class="px-2 py-1 rounded-full
+                                        {{ date('H:i', strtotime($booking->start_time)) }} -
+                                        {{ date('H:i', strtotime($booking->end_time)) }}
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-1 rounded-full text-xs
                                             @if($booking->status == 'confirmed') bg-green-900 text-green-400
                                             @elseif($booking->status == 'pending') bg-yellow-900 text-yellow-400
-                                            @else bg-red-900 text-red-400 @endif text-sm">
+                                            @else bg-red-900 text-red-400 @endif">
                                             {{ ucfirst($booking->status) }}
                                         </span>
                                     </td>
@@ -119,7 +130,7 @@
                         <i class='bx bx-bolt text-green-400 mr-2'></i>
                         Quick Actions
                     </h3>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <a href="{{ route('admin.fields.create') }}" class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
                             <i class='bx bx-plus text-2xl mb-2'></i>
                             <span class="text-sm">Add New Field</span>
@@ -128,13 +139,13 @@
                             <i class='bx bx-file text-2xl mb-2'></i>
                             <span class="text-sm">Generate Report</span>
                         </a>
-                        <a href="" class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
+                        <a href="{{ route('admin.bookings.create') }}" class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
+                            <i class='bx bx-calendar-plus text-2xl mb-2'></i>
+                            <span class="text-sm">Manual Booking</span>
+                        </a>
+                        <a href="{{ route('admin.users.index') }}" class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
                             <i class='bx bx-user-plus text-2xl mb-2'></i>
                             <span class="text-sm">Manage Users</span>
-                        </a>
-                        <a href="" class="p-4 bg-gray-800 rounded-lg hover:bg-green-600 transition flex flex-col items-center">
-                            <i class='bx bx-money text-2xl mb-2'></i>
-                            <span class="text-sm">View Payments</span>
                         </a>
                     </div>
                 </div>

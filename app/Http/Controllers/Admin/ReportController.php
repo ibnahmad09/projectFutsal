@@ -78,19 +78,48 @@ class ReportController extends Controller
 
     private function generateFinancialReport($startDate, $endDate)
     {
-        // Query financial data
-        $totalRevenue = Payment::whereBetween('payment_date', [$startDate, $endDate])
+        // Hitung total revenue dari payments (booking online)
+        $onlineRevenue = Payment::whereBetween('payment_date', [$startDate, $endDate])
             ->where('status', 'success')
             ->sum('amount');
 
+        // Hitung total revenue dari booking manual
+        $manualRevenue = Booking::whereBetween('booking_date', [$startDate, $endDate])
+            ->where('is_manual_booking', true)
+            ->where('status', 'confirmed')
+            ->sum('total_price');
+
+        // Total revenue adalah jumlah dari kedua sumber
+        $totalRevenue = $onlineRevenue + $manualRevenue;
+
+        // Ambil semua transaksi untuk detail
         $payments = Payment::whereBetween('payment_date', [$startDate, $endDate])
             ->get()
             ->groupBy('status');
 
+        // Tambahkan booking manual ke dalam transaksi
+        $manualBookings = Booking::whereBetween('booking_date', [$startDate, $endDate])
+            ->where('is_manual_booking', true)
+            ->where('status', 'confirmed')
+            ->get()
+            ->map(function($booking) {
+                return (object)[
+                    'payment_date' => $booking->booking_date,
+                    'amount' => $booking->total_price,
+                    'status' => 'success',
+                    'is_manual' => true
+                ];
+            });
+
+        // Gabungkan transaksi online dan manual
+        $allTransactions = $payments->flatten()->concat($manualBookings);
+
         return [
             'total_revenue' => $totalRevenue,
+            'online_revenue' => $onlineRevenue,
+            'manual_revenue' => $manualRevenue,
             'payment_statuses' => $payments->map->count(),
-            'transactions' => $payments->flatten()
+            'transactions' => $allTransactions->sortByDesc('payment_date')
         ];
     }
 
@@ -106,15 +135,27 @@ class ReportController extends Controller
             ->orderByDesc('total')
             ->first();
 
+        // Hitung total revenue dari payments (booking online)
+        $onlineRevenue = Payment::whereBetween('payment_date', [$startDate, $endDate])
+        ->where('status', 'success')
+        ->sum('amount');
+
+        // Hitung total revenue dari booking manual
+        $manualRevenue = Booking::whereBetween('booking_date', [$startDate, $endDate])
+            ->where('is_manual_booking', true)
+            ->where('status', 'confirmed')
+            ->sum('total_price');
+
+
         // Query total revenue dari booking
-        $totalRevenue = Payment::whereBetween('payment_date', [$startDate, $endDate])
-            ->where('status', 'success')
-            ->sum('amount');
+        $totalRevenue = $totalRevenue = $onlineRevenue + $manualRevenue;
 
         return [
             'total_bookings' => $totalBookings,
             'most_popular_field' => $mostPopularField ? $mostPopularField->field->name : 'Tidak ada data',
             'total_revenue' => $totalRevenue,
+            'online_revenue' => $onlineRevenue,
+            'manual_revenue' => $manualRevenue,
         ];
     }
 
