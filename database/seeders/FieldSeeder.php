@@ -17,7 +17,7 @@ class FieldSeeder extends Seeder
         Field::create([
             'name' => 'Lapangan Utama',
             'description' => 'Lapangan futsal utama dengan kualitas terbaik',
-            'price_per_hour' => 150000,
+            'price_per_hour' => 80000,
             'open_time' => '08:00:00',
             'close_time' => '22:00:00'
         ]);
@@ -25,7 +25,7 @@ class FieldSeeder extends Seeder
         // Tambahkan gambar lapangan
         FieldImage::create([
             'field_id' => 1,
-            'image_path' => 'field_images/default.jpg' // Sesuaikan dengan path gambar
+            'image_path' => 'field_images/3bx51Vzc9oh6bRXoKm9rMNZMCFbUZHa9MX6vD7BE.png'
         ]);
     }
 }

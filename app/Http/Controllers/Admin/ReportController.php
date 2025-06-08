@@ -7,6 +7,7 @@ use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Payment;
+use App\Models\Booking;
 
 class ReportController extends Controller
 {
@@ -50,7 +51,7 @@ class ReportController extends Controller
             $fileName = 'report_'.$report->id.'_'.time().'.pdf';
             $filePath = 'reports/'.$fileName;
             Storage::put($filePath, $pdf->output());
-            
+
             // Update report with file path
             $report->update(['file_path' => $filePath]);
 
@@ -93,7 +94,31 @@ class ReportController extends Controller
         ];
     }
 
-    // Add similar methods for booking and user reports
+    private function generateBookingReport($startDate, $endDate)
+    {
+        // Query data booking
+        $totalBookings = Booking::whereBetween('booking_date', [$startDate, $endDate])->count();
+
+        // Query field paling populer
+        $mostPopularField = Booking::whereBetween('booking_date', [$startDate, $endDate])
+            ->select('field_id', \DB::raw('count(*) as total'))
+            ->groupBy('field_id')
+            ->orderByDesc('total')
+            ->first();
+
+        // Query total revenue dari booking
+        $totalRevenue = Payment::whereBetween('payment_date', [$startDate, $endDate])
+            ->where('status', 'success')
+            ->sum('amount');
+
+        return [
+            'total_bookings' => $totalBookings,
+            'most_popular_field' => $mostPopularField ? $mostPopularField->field->name : 'Tidak ada data',
+            'total_revenue' => $totalRevenue,
+        ];
+    }
+
+    // Add similar methods for user reports
 
     public function index()
     {
@@ -112,9 +137,9 @@ class ReportController extends Controller
         if ($report->file_path && file_exists(public_path($report->file_path))) {
             unlink(public_path($report->file_path));
         }
-        
+
         $report->delete();
-        
+
         return redirect()->route('admin.reports.index')
             ->with('success', 'Report berhasil dihapus');
     }

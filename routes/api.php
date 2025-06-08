@@ -45,26 +45,29 @@ Route::get('/available-times/{field}', function (Field $field) {
     $now = now();
     $isToday = $date === $now->format('Y-m-d');
 
-    // Get booked slots only for this specific field
+    // Get booked slots
     $bookedSlots = Booking::where('field_id', $field->id)
         ->whereDate('booking_date', $date)
         ->where('status', '!=', 'canceled')
         ->get()
         ->flatMap(function ($booking) {
-            return Carbon\CarbonPeriod::create(
-                $booking->start_time,
-                '1 hour',
-                $booking->end_time
-            )->toArray();
-        })
-        ->map(fn($time) => $time->format('H:i'));
+            $slots = [];
+            $start = Carbon\Carbon::parse($booking->start_time);
+            $end = Carbon\Carbon::parse($booking->end_time);
 
-    // Generate all possible slots based on this field's opening hours
+            while ($start->lt($end)) {
+                $slots[] = $start->format('H:i');
+                $start->addHour();
+            }
+            return $slots;
+        })
+        ->toArray();
+
+    // Generate all possible slots
     $allSlots = [];
     $current = Carbon\Carbon::parse($field->open_time);
     $closeTime = Carbon\Carbon::parse($field->close_time);
 
-    // If booking is for today, start from current time
     if ($isToday) {
         $current = $now->copy()->addHour()->startOfHour();
         if ($current->lt(Carbon\Carbon::parse($field->open_time))) {
@@ -78,50 +81,68 @@ Route::get('/available-times/{field}', function (Field $field) {
     }
 
     // Filter out booked slots
-    $availableSlots = array_diff($allSlots, $bookedSlots->toArray());
+    $availableSlots = array_values(array_diff($allSlots, $bookedSlots));
+
+    // Debug logging
+    \Log::info('Available Times Debug', [
+        'field_id' => $field->id,
+        'date' => $date,
+        'booked_slots' => $bookedSlots,
+        'all_slots' => $allSlots,
+        'available_slots' => $availableSlots
+    ]);
 
     return response()->json([
         'field_id' => $field->id,
-        'available_slots' => array_values($availableSlots)
+        'available_slots' => $availableSlots,
+        'debug' => [
+            'booked_slots' => $bookedSlots,
+            'all_slots' => $allSlots
+        ]
     ]);
 });
 
 Route::get('/real-time-schedule', function() {
-    $bookings = \App\Models\Booking::with(['field', 'user'])
-        ->whereDate('booking_date', now()->toDateString())
-        ->where(function($query) {
-            $query->whereTime('end_time', '>=', now()->toTimeString())
-                ->orWhere('status', 'active');
-        })
-        ->orderBy('start_time')
-        ->get()
-        ->map(function($booking) {
-            return [
-                'field_name' => $booking->field->name,
-                'user_name' => $booking->user->name,
-                'start_time' => $booking->start_time,
-                'end_time' => $booking->end_time,
-                'status' => $booking->status,
-                'type' => 'ongoing'
-            ];
-        });
+    try {
+        $bookings = \App\Models\Booking::with(['field', 'user'])
+            ->whereDate('booking_date', now()->toDateString())
+            ->where(function($query) {
+                $query->whereTime('end_time', '>=', now()->toTimeString())
+                    ->orWhere('status', 'active');
+            })
+            ->orderBy('start_time')
+            ->get()
+            ->map(function($booking) {
+                return [
+                    'field_name' => $booking->field ? $booking->field->name : 'Unknown Field',
+                    'user_name' => $booking->user ? $booking->user->name : 'Unknown User',
+                    'start_time' => $booking->start_time->format('H:i'), // Format waktu menjadi H:i
+                    'end_time' => $booking->end_time->format('H:i'),     // Format waktu menjadi H:i
+                    'status' => $booking->status,
+                    'type' => 'ongoing'
+                ];
+            });
 
-    $upcomingBookings = \App\Models\Booking::with(['field', 'user'])
-        ->whereDate('booking_date', '>', now()->toDateString())
-        ->where('status', 'confirmed')
-        ->orderBy('booking_date')
-        ->orderBy('start_time')
-        ->get()
-        ->map(function($booking) {
-            return [
-                'field_name' => $booking->field->name,
-                'user_name' => $booking->user->name,
-                'start_time' => $booking->start_time,
-                'end_time' => $booking->end_time,
-                'status' => $booking->status,
-                'type' => 'upcoming'
-            ];
-        });
+        $upcomingBookings = \App\Models\Booking::with(['field', 'user'])
+            ->whereDate('booking_date', '>', now()->toDateString())
+            ->where('status', 'confirmed')
+            ->orderBy('booking_date')
+            ->orderBy('start_time')
+            ->get()
+            ->map(function($booking) {
+                return [
+                    'field_name' => $booking->field ? $booking->field->name : 'Unknown Field',
+                    'user_name' => $booking->user ? $booking->user->name : 'Unknown User',
+                    'start_time' => $booking->start_time->format('H:i'), // Format waktu menjadi H:i
+                    'end_time' => $booking->end_time->format('H:i'),     // Format waktu menjadi H:i
+                    'status' => $booking->status,
+                    'type' => 'upcoming'
+                ];
+            });
 
-    return response()->json([...$bookings, ...$upcomingBookings]);
+        return response()->json([...$bookings, ...$upcomingBookings]);
+    } catch (\Exception $e) {
+        \Log::error('Error in real-time-schedule: ' . $e->getMessage());
+        return response()->json(['error' => 'Terjadi kesalahan saat mengambil data jadwal'], 500);
+    }
 });

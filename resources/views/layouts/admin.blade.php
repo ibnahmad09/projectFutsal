@@ -44,6 +44,7 @@
             box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
         }
     </style>
+    @stack('styles')
 </head>
 <body class="bg-gray-900 text-gray-100">
     <!-- Admin Navigation -->
@@ -131,4 +132,50 @@
         const sidebar = document.querySelector('aside');
         sidebar.classList.toggle('hidden');
     }
+
+    async function validateDuration() {
+        const fieldId = document.querySelector('select[name="field_id"]').value;
+        const date = document.querySelector('input[name="booking_date"]').value;
+        const startTime = document.getElementById('start_time').value;
+        const duration = parseInt(document.getElementById('duration').value);
+
+        if (!fieldId || !date || !startTime || !duration) return;
+
+        try {
+            const response = await fetch(`/api/available-times/${fieldId}?date=${date}`);
+            const data = await response.json();
+
+            // Hitung waktu selesai
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
+            const endTime = end.toTimeString().slice(0, 5);
+
+            // Buat array dari semua slot yang dibutuhkan
+            const requiredSlots = [];
+            let currentTime = new Date(start);
+
+            for (let i = 0; i < duration; i++) {
+                requiredSlots.push(currentTime.toTimeString().slice(0, 5));
+                currentTime.setHours(currentTime.getHours() + 1);
+            }
+
+            // Cek apakah semua slot yang dibutuhkan tersedia
+            const allSlotsAvailable = requiredSlots.every(slot =>
+                data.available_slots.includes(slot)
+            );
+
+            if (!allSlotsAvailable) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Durasi Tidak Tersedia',
+                    text: 'Beberapa slot waktu dalam durasi yang dipilih sudah dipesan. Silakan pilih durasi yang lebih pendek atau waktu mulai yang berbeda.'
+                });
+                document.getElementById('duration').value = '1';
+            }
+        } catch (error) {
+            console.error('Error validating duration:', error);
+        }
+    }
 </script>
+
+@stack('scripts')

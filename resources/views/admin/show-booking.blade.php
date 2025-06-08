@@ -36,13 +36,13 @@
                         <div>
                             <p class="text-gray-400">Waktu:</p>
                             <p class="font-medium text-green-400">
-                                {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - 
+                                {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} -
                                 {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
                             </p>
                         </div>
                         <div>
                             <p class="text-gray-400">Status:</p>
-                            <span class="badge 
+                            <span class="badge
                                 @if($booking->status == 'pending') bg-warning
                                 @elseif($booking->status == 'confirmed') bg-success
                                 @else bg-danger @endif">

@@ -2,6 +2,15 @@
 
 @section('title', 'Admin Cyber Booking - FUTSALDESA')
 
+<!-- Tambahkan ini untuk SweetAlert2 -->
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+@endpush
+
 @section('content')
 
     <!-- Booking Management Content -->
@@ -13,9 +22,100 @@
                 Booking Management
             </h1>
             <div class="flex gap-4">
+                <!-- Tambahkan tombol Input Manual -->
+                <button onclick="openManualBookingModal()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center">
+                    <i class='bx bx-plus mr-2'></i> Input Manual
+                </button>
                 <button class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg flex items-center">
                     <i class='bx bx-filter-alt mr-2'></i> Filters
                 </button>
+            </div>
+        </div>
+
+        <!-- Modal Input Manual Booking -->
+        <div id="manualBookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="bg-gray-900 rounded-lg w-full max-w-2xl p-6">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-white">Input Booking Manual</h3>
+                    <button onclick="closeManualBookingModal()" class="text-gray-400 hover:text-white">
+                        <i class='bx bx-x text-2xl'></i>
+                    </button>
+                </div>
+
+                <!-- Form -->
+                <form id="manualBookingForm" onsubmit="submitManualBooking(event)">
+                    @csrf
+                    <!-- Step 1: Informasi Dasar -->
+                    <div id="manualStep1">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Nama Penyewa</label>
+                                <input type="text" name="customer_name" required
+                                    class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Nomor Telepon</label>
+                                <input type="tel" name="customer_phone" required
+                                    class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Lapangan</label>
+                                <select name="field_id" required class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg">
+                                    @foreach($fields as $field)
+                                        <option value="{{ $field->id }}">{{ $field->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Tanggal Booking</label>
+                                <input type="date" name="booking_date" required
+                                    class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg"
+                                    min="{{ now()->format('Y-m-d') }}">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Waktu Mulai</label>
+                                <select name="start_time" id="start_time" required class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg">
+                                    <option value="">Pilih Waktu</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Durasi (Jam)</label>
+                                <select name="duration" id="duration" required class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg">
+                                    @for($i = 1; $i <= 4; $i++)
+                                        <option value="{{ $i }}">{{ $i }} Jam</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-gray-300 mb-2">Metode Pembayaran</label>
+                            <select name="payment_method" required class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg">
+                                <option value="cash">Tunai di Tempat</option>
+                                <option value="e-wallet">E-Wallet</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="flex justify-end gap-2 mt-6">
+                        <button type="button" onclick="closeManualBookingModal()"
+                            class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            Simpan Booking
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -24,7 +124,7 @@
             <div class="hologram-effect p-4 rounded-xl">
                 <div class="flex justify-between items-center">
                     <div>
-                        <div class="text-2xl font-bold">142</div>
+                        <div class="text-2xl font-bold">{{ $totalBookings }}</div>
                         <div class="text-sm text-green-400">Total Bookings</div>
                     </div>
                     <i class='bx bx-line-chart text-3xl text-green-400'></i>
@@ -75,7 +175,11 @@
                                 <td class="p-4">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 rounded-full bg-gray-700 mr-3"></div>
-                                        {{ $booking->user->name }}
+                                        @if($booking->is_manual_booking)
+                                            {{ $booking->customer_name }}
+                                        @else
+                                            {{ $booking->user ? $booking->user->name : 'User tidak tersedia' }}
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="p-4">{{ $booking->field->name }}</td>
@@ -255,5 +359,148 @@
                 }
             }
         });
+
+        // Tambahkan event listener untuk field dan tanggal
+        document.querySelector('select[name="field_id"]').addEventListener('change', loadAvailableTimes);
+        document.querySelector('input[name="booking_date"]').addEventListener('change', loadAvailableTimes);
+
+        async function loadAvailableTimes() {
+            const fieldId = document.querySelector('select[name="field_id"]').value;
+            const date = document.querySelector('input[name="booking_date"]').value;
+            const startTimeSelect = document.getElementById('start_time');
+
+            if (!fieldId || !date) {
+                startTimeSelect.innerHTML = '<option value="">Pilih Waktu</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/available-times/${fieldId}?date=${date}`);
+                const data = await response.json();
+
+                // Kosongkan select
+                startTimeSelect.innerHTML = '<option value="">Pilih Waktu</option>';
+
+                // Tambahkan opsi waktu yang tersedia
+                data.available_slots.forEach(time => {
+                    const option = document.createElement('option');
+                    option.value = time;
+                    option.textContent = time;
+                    startTimeSelect.appendChild(option);
+                });
+
+                // Jika tidak ada waktu yang tersedia
+                if (data.available_slots.length === 0) {
+                    startTimeSelect.innerHTML = '<option value="">Tidak ada waktu tersedia</option>';
+                }
+            } catch (error) {
+                console.error('Error loading available times:', error);
+                startTimeSelect.innerHTML = '<option value="">Error loading times</option>';
+            }
+        }
+
+        // Tambahkan validasi durasi berdasarkan waktu yang tersedia
+        document.getElementById('duration').addEventListener('change', validateDuration);
+        document.getElementById('start_time').addEventListener('change', validateDuration);
+
+        async function validateDuration() {
+            const fieldId = document.querySelector('select[name="field_id"]').value;
+            const date = document.querySelector('input[name="booking_date"]').value;
+            const startTime = document.getElementById('start_time').value;
+            const duration = parseInt(document.getElementById('duration').value);
+
+            if (!fieldId || !date || !startTime || !duration) return;
+
+            try {
+                const response = await fetch(`/api/available-times/${fieldId}?date=${date}`);
+                const data = await response.json();
+
+                // Buat array dari semua slot yang dibutuhkan
+                const requiredSlots = [];
+                const start = new Date(`2000-01-01T${startTime}`);
+
+                for (let i = 0; i < duration; i++) {
+                    const slotTime = new Date(start.getTime() + (i * 60 * 60 * 1000));
+                    requiredSlots.push(slotTime.toTimeString().slice(0, 5));
+                }
+
+                // Debug: Tampilkan slot yang dibutuhkan dan yang tersedia
+                console.log('Required Slots:', requiredSlots);
+                console.log('Available Slots:', data.available_slots);
+
+                // Cek apakah semua slot yang dibutuhkan tersedia
+                const unavailableSlots = requiredSlots.filter(slot => !data.available_slots.includes(slot));
+
+                if (unavailableSlots.length > 0) {
+                    console.log('Unavailable Slots:', unavailableSlots);
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Durasi Tidak Tersedia',
+                        text: `Slot waktu berikut tidak tersedia: ${unavailableSlots.join(', ')}`
+                    });
+                    document.getElementById('duration').value = '1';
+                }
+            } catch (error) {
+                console.error('Error validating duration:', error);
+            }
+        }
+
+        // Tambahkan script untuk modal manual booking
+        function openManualBookingModal() {
+            document.getElementById('manualBookingModal').classList.remove('hidden');
+        }
+
+        function closeManualBookingModal() {
+            document.getElementById('manualBookingModal').classList.add('hidden');
+            document.getElementById('manualBookingForm').reset();
+        }
+
+        async function submitManualBooking(e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('{{ route("admin.bookings.store") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                // Cek tipe konten response
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server tidak mengembalikan response JSON yang valid');
+                }
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Booking berhasil ditambahkan',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    throw new Error(result.message || 'Terjadi kesalahan');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: error.message || 'Terjadi kesalahan sistem'
+                });
+            }
+        }
     </script>
 @endsection

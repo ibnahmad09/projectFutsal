@@ -13,7 +13,7 @@
         @if(auth()->user()->member && auth()->user()->member->is_active)
             <p>Anda sedang menjalani proses member. Minggu ke-{{ auth()->user()->member->weeks_completed }} dari 4 minggu.</p>
         @else
-            <p>Jadilah member dan dapatkan gratis bermain satu kali! <a href="https://wa.me/082226866782" class="text-blue-600">Ajukan sekarang via WA Admin</a></p>
+            <p>Jadilah member dan dapatkan gratis bermain satu kali! <a href="https://wa.me/6282226866782" class="text-blue-600">Ajukan sekarang via WA Admin</a></p>
         @endif
     </div>
     <!-- Hero Section -->
@@ -179,6 +179,12 @@
         setInterval(fetchRealTimeSchedule, 60000);
 
         function formatTime(dateString) {
+            // Pastikan dateString adalah string waktu dalam format HH:mm
+            if (typeof dateString === 'string' && dateString.includes(':')) {
+                return dateString; // Langsung kembalikan string waktu jika sudah dalam format yang benar
+            }
+
+            // Jika dateString adalah objek Date atau timestamp
             const date = new Date(dateString);
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');

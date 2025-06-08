@@ -16,7 +16,7 @@
                             <div class="text-2xl font-bold">{{ $totalBookings }}</div>
                             <div class="text-sm text-green-400">Total Bookings</div>
                         </div>
-                        <i class='bx bx-calendar-event text-3xl text-green-400'></i>
+                        <i class='bx bx-line-chart text-3xl text-green-400'></i>
                     </div>
                     <div class="mt-2 h-1 bg-gray-700">
                         <div class="h-full bg-green-400 w-3/4"></div>
@@ -86,7 +86,13 @@
                                 @foreach($recentBookings as $booking)
                                 <tr class="border-b border-gray-700 hover:bg-gray-800">
                                     <td class="p-3">{{ $booking->booking_code }}</td>
-                                    <td class="p-3">{{ $booking->user->name }}</td>
+                                    <td class="p-3">
+                                        @if($booking->is_manual_booking)
+                                            {{ $booking->customer_name }}
+                                        @else
+                                            {{ $booking->user ? $booking->user->name : 'User tidak tersedia' }}
+                                        @endif
+                                    </td>
                                     <td class="p-3">{{ $booking->field->name }}</td>
                                     <td class="p-3">{{ date('H:i', strtotime($booking->start_time)) }} - {{ date('H:i', strtotime($booking->end_time)) }}</td>
                                     <td class="p-3">

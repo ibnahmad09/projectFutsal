@@ -19,14 +19,36 @@ class Booking extends Model
         'duration',
         'total_price',
         'status',
-        'payment_method'
+        'payment_method',
+        'customer_name',
+        'customer_phone',
+        'is_manual_booking'
     ];
 
     protected $casts = [
-        'booking_date' => 'date',
+        'booking_date' => 'datetime',
         'start_time' => 'datetime:H:i',
-        'end_time' => 'datetime:H:i'
+        'end_time' => 'datetime:H:i',
+        'is_manual_booking' => 'boolean'
     ];
+
+    // Tambahkan accessor untuk mendapatkan nama customer
+    public function getCustomerNameAttribute()
+    {
+        if ($this->is_manual_booking) {
+            return $this->attributes['customer_name'];
+        }
+        return $this->user ? $this->user->name : 'User tidak tersedia';
+    }
+
+    // Tambahkan accessor untuk mendapatkan nomor telepon
+    public function getCustomerPhoneAttribute()
+    {
+        if ($this->is_manual_booking) {
+            return $this->attributes['customer_phone'];
+        }
+        return $this->user ? $this->user->phone : 'Tidak tersedia';
+    }
 
     // Relasi ke User
     public function user()

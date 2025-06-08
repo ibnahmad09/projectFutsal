@@ -16,29 +16,16 @@ class BookingController extends Controller
     // Menampilkan semua booking
     public function index()
     {
-        $bookings = Booking::with(['user', 'field', 'payment'])
-            ->latest()
-            ->paginate(10);
-            $bookingTrends = [
-                'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                'data' => Booking::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-                    ->groupBy('month')
-                    ->pluck('count')
-                    ->toArray()
-            ];
+        $totalBookings = Booking::count();
+        $bookings = Booking::with(['field', 'user'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-            // Data untuk status distribution
-            $statusDistribution = [
-                'labels' => ['Confirmed', 'Pending', 'Completed', 'Canceled'],
-                'data' => [
-                    Booking::where('status', 'confirmed')->count(),
-                    Booking::where('status', 'pending')->count(),
-                    Booking::where('status', 'completed')->count(),
-                    Booking::where('status', 'canceled')->count()
-                ]
-            ];
+        $bookingTrends = $this->getBookingTrends();
+        $statusDistribution = $this->getStatusDistribution();
+        $fields = Field::where('is_available', true)->get();
 
-        return view('admin.booking', compact('bookings', 'bookingTrends', 'statusDistribution'));
+        return view('admin.booking', compact('bookings', 'bookingTrends', 'statusDistribution', 'fields', 'totalBookings'));
     }
 
     // Menampilkan form tambah booking
@@ -53,67 +40,76 @@ class BookingController extends Controller
     // Menyimpan booking baru
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-            'field_id' => 'required|exists:fields,id',
-            'booking_date' => 'required|date|after:today',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'payment_method' => 'required|in:cash,transfer,e_wallet',
-            'payment_status' => 'required|in:pending,paid,failed'
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'field_id' => 'required|exists:fields,id',
+                'booking_date' => 'required|date|after_or_equal:today',
+                'start_time' => 'required|date_format:H:i',
+                'duration' => 'required|integer|min:1|max:4',
+                'payment_method' => 'required|in:cash,e-wallet',
+                'customer_name' => 'required',
+                'customer_phone' => 'required'
+            ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
+
+            // Hitung durasi dan harga
+            $field = Field::findOrFail($request->field_id);
+            $duration = $request->duration;
+            $total_price = $duration * $field->price_per_hour;
+
+            // Hitung end_time
+            $start_time = Carbon::createFromFormat('H:i', $request->start_time);
+            $end_time = $start_time->copy()->addHours($duration);
+
+            // Cek ketersediaan
+            if ($this->checkBookingConflict($request->field_id, $request->booking_date, $request->start_time, $end_time->format('H:i'))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Waktu booking bertabrakan dengan booking lain'
+                ], 422);
+            }
+
+            // Buat booking
+            $booking = Booking::create([
+                'booking_code' => 'BOOK-' . strtoupper(uniqid()),
+                'user_id' => null,
+                'field_id' => $field->id,
+                'booking_date' => $request->booking_date,
+                'start_time' => $start_time,
+                'end_time' => $end_time,
+                'duration' => $duration,
+                'total_price' => $total_price,
+                'status' => 'confirmed',
+                'payment_method' => $request->payment_method,
+                'customer_name' => $request->customer_name,
+                'customer_phone' => $request->customer_phone,
+                'is_manual_booking' => true
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking berhasil dibuat',
+                'booking' => $booking
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Hitung durasi dan harga
-        $field = Field::findOrFail($request->field_id);
-        $duration = $request->duration;
-        $total_price = $duration * $field->price_per_hour;
-
-        // Hitung end_time
-        $start_time = Carbon::createFromFormat('H:i', $request->start_time);
-        $end_time = $start_time->copy()->addHours($duration);
-
-        // Cek ketersediaan
-        if ($this->checkBookingConflict($request->field_id, $request->booking_date, $request->start_time, $request->end_time)) {
-            return redirect()->back()
-                ->withErrors(['time' => 'Waktu booking bertabrakan dengan booking lain'])
-                ->withInput();
-        }
-
-        // Buat booking
-        $booking = Auth::user()->bookings()->create([
-            'booking_code' => 'BOOK-' . strtoupper(uniqid()),
-            'field_id' => $field->id,
-            'booking_date' => $request->booking_date,
-            'start_time' => $start_time,
-            'end_time' => $end_time,
-            'duration' => $duration,
-            'total_price' => $total_price,
-            'status' => 'pending'
-        ]);
-
-        // Buat pembayaran
-        Payment::create([
-            'booking_id' => $booking->id,
-            'amount' => $total_price,
-            'method' => $request->payment_method,
-            'status' => $request->payment_status,
-            'payment_date' => $request->payment_status === 'paid' ? now() : null
-        ]);
-
-        return redirect()->route('admin.bookings.index')
-            ->with('success', 'Booking berhasil dibuat');
     }
 
     // Menampilkan detail booking
     public function show(Booking $booking)
     {
-        $booking->load(['user', 'field', 'payment']);
+        $booking->load(['field', 'user']);
         return view('admin.show-booking', compact('booking'));
     }
 
@@ -210,5 +206,23 @@ class BookingController extends Controller
         }
 
         return $query->exists();
+    }
+
+    private function getBookingTrends()
+    {
+        // Implementasi untuk mendapatkan tren booking
+        return [
+            'labels' => [],
+            'data' => []
+        ];
+    }
+
+    private function getStatusDistribution()
+    {
+        // Implementasi untuk mendapatkan distribusi status
+        return [
+            'labels' => [],
+            'data' => []
+        ];
     }
 }
