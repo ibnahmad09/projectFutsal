@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Field;
 use App\Models\FieldImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class FieldController extends Controller
 {
@@ -109,5 +110,18 @@ class FieldController extends Controller
         $field->delete(); // Hapus lapangan
 
         return redirect()->route('admin.fields.index')->with('success', 'Lapangan berhasil dihapus.');
+    }
+
+    public function destroyImage(FieldImage $image)
+    {
+        // Hapus file gambar dari storage
+        if (Storage::disk('public')->exists($image->image_path)) {
+            Storage::disk('public')->delete($image->image_path);
+        }
+
+        // Hapus record dari database
+        $image->delete();
+
+        return redirect()->back()->with('success', 'Gambar berhasil dihapus');
     }
 }

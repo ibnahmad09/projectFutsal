@@ -35,6 +35,7 @@ Route::get('/home', [HomeController::class, 'index'])->name('user.home.index')->
 Route::get('/about', [AboutController::class, 'index'])->name('user.abouts.index');
 Route::get('/lapangan', [LapanganController::class, 'index'])->name('user.lapangan.index');
 Route::get('/lapangan/{field}', [LapanganController::class, 'show'])->name('user.lapangan.show');
+Route::get('/lapangan/{id}', [FieldController::class, 'showFieldDetail'])->name('field.detail');
 
 Auth::routes(['verify' => true]);
 
@@ -99,6 +100,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('members', MemberController::class);
         Route::post('members/{member}/update-weeks', [\App\Http\Controllers\Admin\MemberController::class, 'updateWeeksCompleted'])->name('admin.members.update-weeks');
+
+        Route::delete('/field-images/{image}', [FieldController::class, 'destroyImage'])->name('admin.field-images.destroy');
     });
 
 

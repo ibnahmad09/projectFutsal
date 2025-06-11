@@ -7,12 +7,12 @@
     <!-- Hero Section -->
     <div class="relative h-screen">
         @if ($field->images && $field->images->isNotEmpty())
-            <img src="{{ asset('storage/' . $field->images->first()->image_path) }}" 
-                 alt="{{ $field->name }}" 
+            <img src="{{ asset('storage/' . $field->images->first()->image_path) }}"
+                 alt="{{ $field->name }}"
                  class="w-full h-full object-cover">
         @else
-            <img src="https://source.unsplash.com/random/1920x1080?futsal" 
-                 alt="{{ $field->name }}" 
+            <img src="https://source.unsplash.com/random/1920x1080?futsal"
+                 alt="{{ $field->name }}"
                  class="w-full h-full object-cover">
         @endif
 
@@ -21,7 +21,7 @@
             <div class="text-center text-white max-w-2xl px-4">
                 <h1 class="text-4xl md:text-6xl font-bold mb-6">{{ $field->name }}</h1>
                 <p class="text-lg md:text-xl mb-8">{{ $field->description }}</p>
-                
+
                 <!-- Status & Price -->
                 <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 inline-block">
                     <div class="flex items-center justify-center space-x-6">

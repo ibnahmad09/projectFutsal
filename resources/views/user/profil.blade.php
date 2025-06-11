@@ -24,7 +24,7 @@
                         <p class="text-green-200 text-sm md:text-base">Member sejak {{ $user->created_at->format('Y') }}</p>
                     </div>
                 </div>
-                <a href="{{ route('user.profil.edit') }}" 
+                <a href="{{ route('user.profil.edit') }}"
                     class="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-white hover:bg-white/30 transition text-sm md:text-base">
                     <i class='bx bx-edit mr-2'></i>Edit Profil
                 </a>
@@ -74,15 +74,7 @@
                             <i class='bx bx-calendar-check text-3xl opacity-75'></i>
                         </div>
                     </div>
-                    <div class="bg-green-500 text-white p-6 rounded-xl">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm">Member Aktif</p>
-                                <p class="text-2xl font-bold">{{ now()->diffInYears($user->created_at) }} Tahun</p>
-                            </div>
-                            <i class='bx bx-time-five text-3xl opacity-75'></i>
-                        </div>
-                    </div>
+
                 </div>
             </div>
 
@@ -101,32 +93,32 @@
                                 {{ $user->email_verified_at ? 'Terverifikasi' : 'Belum Terverifikasi' }}
                             </span>
                         </div>
-                        
+
                         <!-- Form Ubah Password -->
                         <form method="POST" action="{{ route('user.profil.update-password') }}">
                             @csrf
                             @method('PUT')
-                            
+
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-gray-600 mb-1">Password Saat Ini</label>
                                     <input type="password" name="current_password" required
                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
                                 </div>
-                                
+
                                 <div>
                                     <label class="block text-gray-600 mb-1">Password Baru</label>
                                     <input type="password" name="password" required
                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
                                 </div>
-                                
+
                                 <div>
                                     <label class="block text-gray-600 mb-1">Konfirmasi Password Baru</label>
                                     <input type="password" name="password_confirmation" required
                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
                                 </div>
-                                
-                                <button type="submit" 
+
+                                <button type="submit"
                                         class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
                                     Ubah Password
                                 </button>

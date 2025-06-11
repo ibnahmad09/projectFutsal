@@ -303,7 +303,4 @@
             </div>
         </div>
     </div>
-
-    <!-- Real-time Schedule Section -->
-
 @endsection

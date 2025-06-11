@@ -19,7 +19,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
             <h1 class="text-3xl font-bold neon-text mb-4 md:mb-0">
                 <i class='bx bx-calendar-check mr-2'></i>
-                Booking Management
+                Kelola Booking
             </h1>
             <div class="flex gap-4">
                 <!-- Tambahkan tombol Input Manual -->
@@ -125,7 +125,7 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <div class="text-2xl font-bold">{{ $totalBookings }}</div>
-                        <div class="text-sm text-green-400">Total Bookings</div>
+                        <div class="text-sm text-green-400">Total Booking</div>
                     </div>
                     <i class='bx bx-line-chart text-3xl text-green-400'></i>
                 </div>

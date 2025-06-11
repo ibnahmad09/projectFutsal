@@ -8,7 +8,7 @@
             <div class="mb-8 border-b border-green-900 pb-4">
                 <h1 class="text-3xl font-bold neon-text flex items-center">
                     <i class='bx bx-edit mr-2'></i>
-                    Edit Field: {{ $field->name }}
+                    Edit Lapangan: {{ $field->name }}
                 </h1>
                 <p class="text-green-400 mt-2">Update field details</p>
             </div>
@@ -20,7 +20,7 @@
 
                 <!-- Field Name -->
                 <div class="mb-4">
-                    <label for="name" class="block text-green-400 mb-2">Field Name *</label>
+                    <label for="name" class="block text-green-400 mb-2">Nama Lapangan *</label>
                     <input type="text" id="name" name="name" value="{{ old('name', $field->name) }}"
                            class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 input-glow focus:outline-none"
                            required>

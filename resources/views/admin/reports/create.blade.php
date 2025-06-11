@@ -8,7 +8,7 @@
     <div class="flex justify-between items-center">
         <h1 class="text-3xl font-bold flex items-center">
             <i class='bx bx-file mr-2 text-green-400'></i>
-            Generate Report
+           Generate Laporan
         </h1>
     </div>
 
@@ -16,7 +16,7 @@
     <div class="hologram-effect p-6 rounded-xl">
         <form action="{{ route('admin.reports.store') }}" method="POST">
             @csrf
-            
+
             <!-- Report Title -->
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-2">Judul Laporan</label>
@@ -83,7 +83,7 @@
             <i class='bx bx-history mr-2 text-green-400'></i>
             Laporan Terakhir
         </h2>
-        
+
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-gray-800">

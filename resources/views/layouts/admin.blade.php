@@ -70,11 +70,11 @@
             </a>
             <a href="{{ route('admin.fields.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-football text-green-400 mr-2'></i>
-                Field
+                lapangan
             </a>
             <a href="{{ route('admin.analytics') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-line-chart text-green-400 mr-2'></i>
-                Analytic
+                Analitik
             </a>
             <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-user text-green-400 mr-2'></i>
@@ -82,7 +82,7 @@
             </a>
             <a href="{{ route('admin.reports.index') }}" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition">
                 <i class='bx bx-file text-green-400 mr-2'></i>
-                Report
+                Laporan
             </a>
         </nav>
     </aside>

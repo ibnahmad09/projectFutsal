@@ -4,6 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Field; // Pastikan Anda mengimpor model Field Anda
 
 class Field extends Model
 {
@@ -39,5 +40,11 @@ class Field extends Model
     public function schedules()
     {
         return $this->hasMany(Schedule::class);
+    }
+
+    public function showFieldDetail($id)
+    {
+        $field = Field::findOrFail($id); // Mendapatkan data lapangan berdasarkan ID
+        return view('user.lapangan', compact('field'));
     }
 }

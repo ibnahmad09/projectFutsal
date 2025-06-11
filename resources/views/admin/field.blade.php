@@ -10,7 +10,7 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
         <h1 class="text-3xl font-bold neon-text mb-4 md:mb-0">
             <i class='bx bx-football mr-2'></i>
-            Field Management
+            Kelola Lapangan
         </h1>
         <div class="flex gap-4">
             {{-- <button class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center">
@@ -28,7 +28,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <div class="text-2xl font-bold">{{ $field ? 1 : 0 }}</div>
-                    <div class="text-sm text-green-400">Total Fields</div>
+                    <div class="text-sm text-green-400">Jumlah Lapangan</div>
                 </div>
                 <i class='bx bx-stats text-3xl text-green-400'></i>
             </div>
@@ -37,7 +37,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <div class="text-2xl font-bold">{{ $field ? ($field->is_available ? 1 : 0) : 0 }}</div>
-                    <div class="text-sm text-green-400">Available Now</div>
+                    <div class="text-sm text-green-400">Tersedia Sekarang</div>
                 </div>
                 <i class='bx bx-check-circle text-3xl text-green-400'></i>
             </div>
@@ -55,7 +55,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <div class="text-2xl font-bold">Rp{{ number_format($field ? $field->price_per_hour : 0, 0, ',', '.') }}</div>
-                    <div class="text-sm text-green-400">Daily Revenue</div>
+                    <div class="text-sm text-green-400">Total Harga Sewa lapangan</div>
                 </div>
                 <i class='bx bx-coin text-3xl text-green-400'></i>
             </div>
@@ -160,12 +160,12 @@
              <table class="w-full">
                  <thead class="bg-gray-800">
                      <tr>
-                         <th class="p-4 text-left">Field Name</th>
-                         <th class="p-4 text-left">Type</th>
+                         <th class="p-4 text-left">Nama Lapangan</th>
+                         <th class="p-4 text-left">Tipe</th>
                          <th class="p-4 text-left">Status</th>
-                         <th class="p-4 text-left">Price/Hour</th>
-                         <th class="p-4 text-left">Operating Hours</th>
-                         <th class="p-4 text-left">Actions</th>
+                         <th class="p-4 text-left">Harga Sewa/Jam</th>
+                         <th class="p-4 text-left">Jam Operasional</th>
+                         <th class="p-4 text-left">Aksi</th>
                      </tr>
                  </thead>
                  <tbody>
