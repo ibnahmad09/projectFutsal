@@ -22,24 +22,6 @@
             <div class="text-center text-white">
                 <h1 class="text-4xl md:text-5xl font-bold mb-4">Sewa Lapangan Futsal Desa</h1>
                 <p class="text-lg mb-8">Booking lapangan favoritmu kapan saja, dimana saja!</p>
-
-
-
-                <!-- Search Form -->
-                <div class="max-w-2xl mx-auto bg-white rounded-lg p-4 shadow-lg">
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <input type="date" class="p-2 border rounded-lg flex-1">
-                        <input type="time" class="p-2 border rounded-lg flex-1">
-                        <select class="p-2 border rounded-lg flex-1">
-                            <option>1 Jam</option>
-                            <option>2 Jam</option>
-                            <option>3 Jam</option>
-                        </select>
-                        <button class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
-                            Cari Lapangan
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

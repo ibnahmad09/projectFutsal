@@ -90,11 +90,19 @@
         <h2 class="text-3xl font-bold mb-6 text-center">Lokasi Lapangan</h2>
         <div class="aspect-w-16 aspect-h-9">
             <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126646.25766508106!2d112.63027829453124!3d-7.2757699999999945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fbf8381ac47f%3A0x3027a76e352be40!2sSurabaya%2C%20Jawa%20Timur!5e0!3m2!1sid!2sid!4v1718285541354!5m2!1sid!2sid"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.1234567890123!2d112.12345678901234!3d-7.123456789012345!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fbf8381ac47f%3A0x3027a76e352be40!2sLokasi%20Lapangan%20Futsal!5e0!3m2!1sid!2sid!4v1718285541354!5m2!1sid!2sid"
                 class="w-full h-96 rounded-lg border-0"
                 allowfullscreen=""
                 loading="lazy">
             </iframe>
+        </div>
+        <div class="mt-4 text-center">
+            <a href="https://maps.app.goo.gl/ZZR6VPPKe7HfTbkd8"
+               target="_blank"
+               class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <i class='bx bx-map mr-2'></i>
+                Lihat di Google Maps
+            </a>
         </div>
     </div>
 

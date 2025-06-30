@@ -22,23 +22,6 @@
         </div>
     </div>
 <br>
-    <!-- Search Form -->
-    <div class="max-w-2xl mx-auto bg-white rounded-lg p-4 shadow-lg">
-        <div class="flex flex-col md:flex-row gap-4">
-            <input type="date" class="p-2 border rounded-lg flex-1">
-            <input type="time" class="p-2 border rounded-lg flex-1">
-            <select class="p-2 border rounded-lg flex-1">
-                <option>1 Jam</option>
-                <option>2 Jam</option>
-                <option>3 Jam</option>
-            </select>
-            <button class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
-                Cari Lapangan
-            </button>
-        </div>
-    </div>
-
-
     <div class="max-w-7xl mx-auto px-4 py-12">
         <h2 class="text-3xl font-bold mb-8 text-center">Jadwal Booking</h2>
 

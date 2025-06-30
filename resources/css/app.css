@@ -10,3 +10,6 @@
 #scheduleTimeline:hover {
     animation-play-state: paused;
 }
+
+@import "tailwindcss";
+@source "../views";
