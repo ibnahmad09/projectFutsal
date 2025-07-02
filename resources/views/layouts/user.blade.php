@@ -36,8 +36,9 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <a href="{{route('user.home.index')}}" class="flex items-center">
-                    <span class="text-white text-xl font-bold">FUTSAL<span class="text-green-300">DESA</span></span>
+                <a href="{{route('user.home.index')}}" class="flex items-center gap-2">
+                    <i class='bx bx-football text-green-300 text-2xl md:text-3xl'></i>
+                    <span class="text-base md:text-xl font-bold whitespace-nowrap">FUTSALDESA<span class="text-green-300 ml-1">BUKITKEMUNING</span></span>
                 </a>
 
                 <!-- Menu Desktop -->
@@ -47,16 +48,18 @@
                     <a href="{{route('user.profil.show')}}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Profil</a>
                     <a href="{{ route('user.bookings.index') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Riwayat Booking</a>
                     <a href="{{ route('user.member') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Member</a>
+                    @if (Auth::check())
+                        @if(auth()->user()->member && auth()->user()->member->is_active)
+                            <span class="bg-green-600 text-white px-2 py-0.5 text-xs md:text-sm rounded-full hidden md:inline-block">Member</span>
+                        @else
+                            <span class="bg-gray-600 text-white px-2 py-0.5 text-xs md:text-sm rounded-full md:inline-block">Non-Member</span>
+                        @endif
+                    @endif
                 </div>
 
                 <!-- Tombol Login/Logout & Menu -->
                 <div class="flex items-center space-x-4">
                     @if (Auth::check())
-                        @if(auth()->user()->member && auth()->user()->member->is_active)
-                            <span class="bg-green-600 text-white px-4 py-1.5 rounded-full">Member</span>
-                        @else
-                            <span class="bg-gray-600 text-white px-4 py-1.5 rounded-full">Non-Member</span>
-                        @endif
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="inline">
                             @csrf
                             <button type="submit" class="bg-red-500 text-white px-3 py-1.5 rounded-full hover:bg-red-600 transition">
@@ -83,6 +86,13 @@
                     <a href="{{route('user.profil.show')}}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Profil</a>
                     <a href="{{ route('user.bookings.index') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Riwayat Booking</a>
                     <a href="{{ route('user.member') }}" class="text-white hover:bg-green-600/50 p-2 rounded-lg">Member</a>
+                    @if (Auth::check())
+                        @if(auth()->user()->member && auth()->user()->member->is_active)
+                            <span class="bg-green-600 text-white px-2 py-0.5 text-xs md:text-sm rounded-full mt-2 text-center">Member</span>
+                        @else
+                            <span class="bg-gray-600 text-white px-2 py-0.5 text-xs md:text-sm rounded-full mt-2 text-center">Non-Member</span>
+                        @endif
+                    @endif
                 </div>
             </div>
         </div>
@@ -98,30 +108,15 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
-                    <h4 class="text-xl font-bold mb-4">FUTSALDESA</h4>
+                    <h4 class="text-xl font-bold mb-4">FUTSALDESABUKITKEMUNING</h4>
                     <p class="text-gray-400">Sistem penyewaan lapangan futsal terintegrasi untuk desa</p>
                 </div>
                 <div>
                     <h4 class="text-xl font-bold mb-4">Kontak</h4>
                     <ul class="space-y-2 text-gray-400">
-                        <li><i class='bx bx-phone mr-2'></i>+62 812-3456-7890</li>
-                        <li><i class='bx bx-envelope mr-2'></i>info@futsaldesa.id</li>
+                        <li><i class='bx bx-phone mr-2'></i>+62 822-9937-1851</li>
+                        <li><i class='bx bx-envelope mr-2'></i>sucipuspitasari3000@gmail.com</li>
                     </ul>
-                </div>
-                <div>
-                    <h4 class="text-xl font-bold mb-4">Tautan Cepat</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="#" class="hover:text-green-400">Syarat & Ketentuan</a></li>
-                        <li><a href="#" class="hover:text-green-400">Kebijakan Privasi</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-xl font-bold mb-4">Sosial Media</h4>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-2xl hover:text-green-400"><i class='bx bxl-instagram'></i></a>
-                        <a href="#" class="text-2xl hover:text-green-400"><i class='bx bxl-facebook'></i></a>
-                        <a href="#" class="text-2xl hover:text-green-400"><i class='bx bxl-whatsapp'></i></a>
-                    </div>
                 </div>
             </div>
         </div>

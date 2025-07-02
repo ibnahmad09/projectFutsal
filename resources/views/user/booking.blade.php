@@ -145,7 +145,18 @@ function renderTimeSlots(slots) {
     const container = document.getElementById('timeSlots');
     container.innerHTML = '';
 
+    const bookingDate = document.getElementById('booking_date').value;
+    const today = new Date();
+    const selectedDate = new Date(bookingDate);
+    const isToday = today.toISOString().slice(0, 10) === bookingDate;
+    const currentHour = today.getHours();
+
     slots.forEach(slot => {
+        const slotHour = parseInt(slot.split(':')[0], 10);
+        // Jika hari ini, hanya tampilkan slot yang jam-nya lebih besar dari jam sekarang
+        if (isToday && slotHour <= currentHour) {
+            return;
+        }
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'p-2 border rounded hover:bg-green-100';
@@ -249,7 +260,8 @@ async function submitBooking(e) {
     };
 
     try {
-        const response = await fetch('{{ route("user.bookings.store") }}', {
+        // Request hanya untuk mendapatkan snap_token, TIDAK menyimpan booking ke database
+        const response = await fetch('{{ route("user.bookings.snap_token") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -266,16 +278,22 @@ async function submitBooking(e) {
         }
 
         if (data.snap_token) {
-            // Buka popup Midtrans
             window.snap.pay(data.snap_token, {
                 onSuccess: function(result) {
-                    window.location.href = '{{ route("user.callback") }}';
+                    // Pembayaran sukses, simpan booking ke database
+                    saveBookingToDatabase(formData);
                 },
                 onPending: function(result) {
-                    window.location.href = '{{ route("user.callback") }}';
+                    // Pembayaran pending, simpan booking ke database
+                    saveBookingToDatabase(formData);
                 },
                 onError: function(result) {
-                    Swal.fire('Error!', 'Pembayaran gagal', 'error');
+                    // Pembayaran gagal, redirect ke halaman gagal
+                    window.location.href = '{{ route("user.failed") }}';
+                },
+                onClose: function() {
+                    // User menutup popup, redirect ke halaman gagal
+                    window.location.href = '{{ route("user.failed") }}';
                 }
             });
         } else {
@@ -285,6 +303,24 @@ async function submitBooking(e) {
     } catch (error) {
         console.error('Booking Error:', error);
         Swal.fire('Error!', error.message || 'Terjadi kesalahan sistem', 'error');
+    }
+}
+
+// Fungsi untuk simpan booking ke database setelah pembayaran sukses/pending
+async function saveBookingToDatabase(formData) {
+    try {
+        const response = await fetch('{{ route("user.bookings.store") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(formData)
+        });
+        const data = await response.json();
+        window.location.href = '{{ route("user.callback") }}';
+    } catch (error) {
+        window.location.href = '{{ route("user.failed") }}';
     }
 }
 

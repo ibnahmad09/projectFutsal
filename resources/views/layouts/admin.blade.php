@@ -69,6 +69,17 @@
         body.sidebar-open {
             overflow: hidden;
         }
+
+        @media (min-width: 768px) {
+            #sidebar {
+                transform: none !important;
+                position: relative !important;
+                left: 0 !important;
+            }
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -198,8 +209,15 @@
 
     // Close sidebar on window resize if switching to desktop
     window.addEventListener('resize', function() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const body = document.body;
+
         if (window.innerWidth >= 768) {
-            closeSidebar();
+            // Pastikan sidebar selalu tampil di desktop
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            body.classList.remove('sidebar-open');
         }
     });
 

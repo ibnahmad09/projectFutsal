@@ -10,7 +10,7 @@ use App\Models\Booking;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Member;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 

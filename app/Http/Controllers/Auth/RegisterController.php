@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class RegisterController extends Controller
 {
@@ -74,10 +75,30 @@ class RegisterController extends Controller
             'address' => $data['address'],
         ]);
 
-        // Kirim email verifikasi
-        $user->sendEmailVerificationNotification();
-
         return $user;
+    }
+
+    public function register(Request $request)
+    {
+        $this->validator($request->all())->validate();
+
+        // Validasi email dengan AbstractAPI
+        $apiKey = config('services.abstractapi.email_validation_api_key');
+        $email = $request->input('email');
+        $response = Http::get('https://emailvalidation.abstractapi.com/v1/', [
+            'api_key' => $apiKey,
+            'email' => $email,
+        ]);
+        $result = $response->json();
+        if (!isset($result['deliverability']) || $result['deliverability'] !== 'DELIVERABLE') {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['email' => 'Alamat email tidak valid atau tidak dapat menerima email.']);
+        }
+
+        Auth::login($this->create($request->all()));
+
+        return redirect($this->redirectPath());
     }
 
 }

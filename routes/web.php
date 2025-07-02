@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\User\MemberController as UserMemberController;
+use App\Http\Controllers\Auth\RegisterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,10 +38,11 @@ Route::get('/lapangan', [LapanganController::class, 'index'])->name('user.lapang
 Route::get('/lapangan/{field}', [LapanganController::class, 'show'])->name('user.lapangan.show');
 Route::get('/lapangan/{id}', [FieldController::class, 'showFieldDetail'])->name('field.detail');
 
-Auth::routes(['verify' => true]);
+Auth::routes(['verify' => false]);
+Route::post('register', [RegisterController::class, 'register'])->name('register');
 
 // Route yang memerlukan login
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('user.home.index');
     Route::post('/bookings',[HomeController::class, 'store'])->name('user.bookings.store');
     Route::post('/midtrans-notification', [HomeController::class, 'handleNotification']);
@@ -55,6 +57,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/member/use', [UserMemberController::class, 'useMember'])->name('user.member.use');
     Route::post('/member/store', [UserMemberController::class, 'storeMemberBooking'])->name('user.member.store');
     Route::get('/member', [App\Http\Controllers\User\MemberController::class, 'index'])->name('user.member');
+    Route::post('/bookings/snap-token', [HomeController::class, 'getSnapToken'])->name('user.bookings.snap_token');
+    Route::get('/payment/failed', function () {
+        return view('user.payment-failed');
+    })->name('user.failed');
 });
 
     Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {

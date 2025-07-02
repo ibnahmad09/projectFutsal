@@ -21,7 +21,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-       
+
     }
 
     /**
@@ -43,7 +43,7 @@ class HomeController extends Controller
     public function index()
     {
 
-        
+
         $fields = Field::where('is_available', true)->get();
 
         // Get current bookings
@@ -93,7 +93,7 @@ class HomeController extends Controller
     {
         try {
             \Log::info('Booking Request:', $request->all());
-            
+
             $validated = $request->validate([
                 'field_id' => 'required|exists:fields,id',
                 'booking_date' => 'required|date|after_or_equal:today',
@@ -222,7 +222,7 @@ class HomeController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -368,5 +368,55 @@ class HomeController extends Controller
         }
     }
 
-    
+    public function getSnapToken(Request $request)
+    {
+        $validated = $request->validate([
+            'field_id' => 'required|exists:fields,id',
+            'booking_date' => 'required|date|after_or_equal:today',
+            'start_time' => 'required|date_format:H:i',
+            'duration' => 'required|integer|min:1|max:4',
+            'payment_method' => 'required|in:cash,e-wallet',
+        ]);
+
+        $field = Field::findOrFail($request->field_id);
+        $price = $field->price_per_hour * $request->duration;
+
+        // Setup Midtrans
+        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => uniqid('ORDER-'),
+                'gross_amount' => $price,
+            ],
+            'customer_details' => [
+                'first_name' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                'phone' => auth()->user()->phone_number,
+            ],
+            'enabled_payments' => ['gopay', 'shopeepay'],
+            'expiry' => [
+                'duration' => 2,
+                'unit' => 'hour',
+            ],
+        ];
+
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+            return response()->json([
+                'success' => true,
+                'snap_token' => $snapToken,
+                'message' => 'Lanjutkan ke pembayaran',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mendapatkan Snap Token: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }

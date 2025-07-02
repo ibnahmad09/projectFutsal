@@ -49,6 +49,13 @@
                                 class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                             Tambah Minggu
                         </button>
+                        <form action="{{ route('members.destroy', $member->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus member ini?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 ml-2">
+                                Hapus
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach

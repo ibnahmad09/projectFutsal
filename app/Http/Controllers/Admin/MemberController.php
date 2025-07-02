@@ -61,4 +61,11 @@ class MemberController extends Controller
             }
         }
     }
+
+    public function destroy($id)
+    {
+        $member = Member::findOrFail($id);
+        $member->delete();
+        return redirect()->route('members.index')->with('success', 'Member berhasil dihapus.');
+    }
 }

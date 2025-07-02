@@ -37,4 +37,8 @@ return [
         'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
     ],
 
+    'abstractapi' => [
+        'email_validation_api_key' => env('ABSTRACTAPI_EMAIL_VALIDATION_API_KEY'),
+    ],
+
 ];
