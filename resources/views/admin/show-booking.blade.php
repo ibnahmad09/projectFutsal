@@ -31,13 +31,13 @@
                         </div>
                         <div>
                             <p class="text-gray-400">Tanggal:</p>
-                            <p class="font-medium">{{ \Carbon\Carbon::parse($booking->date)->format('d M Y') }}</p>
+                            <p class="font-medium">{{ \Carbon\Carbon::parse($booking->date)->setTimezone('Asia/Jakarta')->format('d M Y') }}</p>
                         </div>
                         <div>
                             <p class="text-gray-400">Waktu:</p>
                             <p class="font-medium text-green-400">
-                                {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} -
-                                {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                                {{ \Carbon\Carbon::parse($booking->start_time)->setTimezone('Asia/Jakarta')->format('H:i') }} -
+                                {{ \Carbon\Carbon::parse($booking->end_time)->setTimezone('Asia/Jakarta')->format('H:i') }}
                             </p>
                         </div>
                         <div>

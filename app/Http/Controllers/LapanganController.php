@@ -53,7 +53,7 @@ class LapanganController extends Controller
         ]);
 
         // Hitung waktu selesai
-        $start = Carbon::parse($request->start_time);
+        $start = Carbon::parse($request->start_time)->setTimezone('Asia/Jakarta');
         $end = $start->copy()->addHours($request->duration);
 
         // Cek apakah user adalah member

@@ -13,21 +13,36 @@ class MemberController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
+        $user = auth()->user();
         $member = $user->member;
 
-        // Ambil jadwal yang harus dibooking oleh member
-        $requiredBookings = Booking::where('user_id', $user->id)
-            ->where('booking_date', '>=', now()->startOfWeek())
-            ->where('booking_date', '<=', now()->endOfWeek())
-            ->get();
+        $requiredBookings = collect();
 
-        // Hitung jumlah kali user sudah bermain
-        $totalPlayed = Booking::where('user_id', $user->id)
-            ->where('status', 'confirmed')
-            ->count();
+        if ($member && $member->is_active && $member->start_date) {
+            $startDate = \Carbon\Carbon::parse($member->start_date)->setTimezone('Asia/Jakarta');
 
-        return view('user.member', compact('member', 'requiredBookings', 'totalPlayed'));
+            // Tampilkan tanggal mulai + 3 minggu berikutnya (total 4 minggu)
+            for ($i = 0; $i < 4; $i++) {
+                $bookingDate = $startDate->copy()->addWeeks($i);
+                // Cek apakah user sudah booking di tanggal ini
+                $booking = \App\Models\Booking::where('user_id', $user->id)
+                    ->whereDate('booking_date', $bookingDate->toDateString())
+                    ->first();
+
+                $requiredBookings->push((object)[
+                    'booking_date' => $bookingDate->toDateString(),
+                    'start_time' => $booking->start_time ?? '-',
+                    'end_time' => $booking->end_time ?? '-',
+                    'status' => $booking->status ?? 'pending',
+                ]);
+            }
+        }
+
+        // Data lain seperti $totalPlayed bisa tetap dikirim
+        return view('user.member', [
+            'requiredBookings' => $requiredBookings,
+            'totalPlayed' => $user->bookings()->count(),
+        ]);
     }
 
     public function useMember()
@@ -69,7 +84,7 @@ class MemberController extends Controller
             ]);
 
             // Hitung waktu selesai
-            $end_time = Carbon::parse($request->start_time)->addHours($request->duration)->format('H:i');
+            $end_time = Carbon::parse($request->start_time)->addHours($request->duration)->format('H:i')->setTimezone('Asia/Jakarta');
 
             // Buat booking gratis
             $booking = Booking::create([

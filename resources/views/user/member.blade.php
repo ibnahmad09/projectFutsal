@@ -18,32 +18,34 @@
                 @if($requiredBookings->isEmpty())
                     <p class="text-gray-700">Tidak ada jadwal yang harus dibooking minggu ini.</p>
                 @else
-                    <table class="min-w-full bg-white">
-                        <thead>
-                            <tr>
-                                <th class="py-2 px-4 border-b">Tanggal</th>
-                                <th class="py-2 px-4 border-b">Waktu Mulai</th>
-                                <th class="py-2 px-4 border-b">Waktu Selesai</th>
-                                <th class="py-2 px-4 border-b">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($requiredBookings as $booking)
-                            <tr>
-                                <td class="py-2 px-4 border-b">{{ $booking->booking_date }}</td>
-                                <td class="py-2 px-4 border-b">{{ $booking->start_time }}</td>
-                                <td class="py-2 px-4 border-b">{{ $booking->end_time }}</td>
-                                <td class="py-2 px-4 border-b">
-                                    @if($booking->status == 'confirmed')
-                                        <span class="text-green-600">Dikonfirmasi</span>
-                                    @else
-                                        <span class="text-yellow-600">Pending</span>
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto rounded-lg shadow">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="py-3 px-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tanggal</th>
+                                    <th scope="col" class="py-3 px-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Waktu Mulai</th>
+                                    <th scope="col" class="py-3 px-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Waktu Selesai</th>
+                                    <th scope="col" class="py-3 px-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100">
+                                @foreach($requiredBookings as $booking)
+                                <tr class="hover:bg-green-50 transition-colors">
+                                    <td class="py-2 px-4 whitespace-nowrap text-sm text-gray-800">{{ $booking->booking_date }}</td>
+                                    <td class="py-2 px-4 whitespace-nowrap text-sm text-gray-800">{{ $booking->start_time }}</td>
+                                    <td class="py-2 px-4 whitespace-nowrap text-sm text-gray-800">{{ $booking->end_time }}</td>
+                                    <td class="py-2 px-4 whitespace-nowrap text-sm">
+                                        @if($booking->status == 'confirmed')
+                                            <span class="inline-block px-2 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded">Dikonfirmasi</span>
+                                        @else
+                                            <span class="inline-block px-2 py-1 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded">Pending</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
 

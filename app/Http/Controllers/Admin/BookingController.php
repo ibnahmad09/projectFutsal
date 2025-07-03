@@ -136,8 +136,8 @@ class BookingController extends Controller
         ]);
 
         // Calculate duration and total price
-        $start = \Carbon\Carbon::parse($request->start_time);
-        $end = \Carbon\Carbon::parse($request->end_time);
+        $start = \Carbon\Carbon::parse($request->start_time)->setTimezone('Asia/Jakarta');
+        $end = \Carbon\Carbon::parse($request->end_time)->setTimezone('Asia/Jakarta');
         $duration = $end->diffInHours($start);
         $field = Field::findOrFail($request->field_id);
         $totalPrice = $duration * $field->price_per_hour;

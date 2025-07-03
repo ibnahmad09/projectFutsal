@@ -75,7 +75,7 @@
                         <div class="grid grid-cols-5 gap-4 p-3 bg-white rounded-lg hover:bg-gray-50 transition-all">
                             <div class="flex items-center">${booking.field_name}</div>
                             <div class="flex items-center">${booking.user_name}</div>
-                            <div class="flex items-center">${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
+                            <div class="flex items-center">${formatDate(booking.booking_date)}<br>${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
                             <div class="flex items-center">
                                 <span class="px-2 py-1 rounded-full text-sm
                                     ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
@@ -108,7 +108,7 @@
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <div class="font-medium">Waktu</div>
-                                    <div>${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
+                                    <div>${formatDate(booking.booking_date)}<br>${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}</div>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <div class="font-medium">Status</div>
@@ -167,6 +167,20 @@
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
             return `${hours}:${minutes}`;
+        }
+
+        function formatDate(dateString) {
+            // Jika dateString sudah dalam format yyyy-mm-dd
+            if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const [year, month, day] = dateString.split('-');
+                return `${day}-${month}-${year}`;
+            }
+            // Jika dateString adalah objek Date atau timestamp
+            const date = new Date(dateString);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}-${month}-${year}`;
         }
     </script>
 

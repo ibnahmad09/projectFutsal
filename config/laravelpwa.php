@@ -73,6 +73,20 @@ return [
                 'url' => '/shortcutlink2'
             ]
         ],
-        'custom' => []
+        'custom' => [
+            'screenshots' => [
+                [
+                    'src' => '/images/screenshots/screenshot1.png',
+                    'sizes' => '540x720',
+                    'type' => 'image/png',
+                    'form_factor' => 'wide'
+                ],
+                [
+                    'src' => '/images/screenshots/screenshot2.png',
+                    'sizes' => '360x720',
+                    'type' => 'image/png',
+                ],
+            ]
+        ]
     ]
 ];

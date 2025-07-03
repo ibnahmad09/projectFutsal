@@ -52,8 +52,8 @@ Route::get('/available-times/{field}', function (Field $field) {
         ->get()
         ->flatMap(function ($booking) {
             $slots = [];
-            $start = Carbon\Carbon::parse($booking->start_time);
-            $end = Carbon\Carbon::parse($booking->end_time);
+            $start = Carbon\Carbon::parse($booking->start_time)->setTimezone('Asia/Jakarta');;
+            $end = Carbon\Carbon::parse($booking->end_time)->setTimezone('Asia/Jakarta');;
 
             while ($start->lt($end)) {
                 $slots[] = $start->format('H:i');
@@ -65,8 +65,8 @@ Route::get('/available-times/{field}', function (Field $field) {
 
     // Generate all possible slots
     $allSlots = [];
-    $current = Carbon\Carbon::parse($field->open_time);
-    $closeTime = Carbon\Carbon::parse($field->close_time);
+    $current = Carbon\Carbon::parse($field->open_time)->setTimezone('Asia/Jakarta');
+    $closeTime = Carbon\Carbon::parse($field->close_time)->setTimezone('Asia/Jakarta');
 
     if ($isToday) {
         $current = $now->copy()->addHour()->startOfHour();
@@ -119,7 +119,8 @@ Route::get('/real-time-schedule', function() {
                     'start_time' => $booking->start_time->format('H:i'), // Format waktu menjadi H:i
                     'end_time' => $booking->end_time->format('H:i'),     // Format waktu menjadi H:i
                     'status' => $booking->status,
-                    'type' => 'ongoing'
+                    'type' => 'ongoing',
+                    'booking_date' => $booking->booking_date instanceof \Carbon\Carbon ? $booking->booking_date->format('Y-m-d') : (string) $booking->booking_date
                 ];
             });
 
@@ -136,7 +137,8 @@ Route::get('/real-time-schedule', function() {
                     'start_time' => $booking->start_time->format('H:i'), // Format waktu menjadi H:i
                     'end_time' => $booking->end_time->format('H:i'),     // Format waktu menjadi H:i
                     'status' => $booking->status,
-                    'type' => 'upcoming'
+                    'type' => 'upcoming',
+                    'booking_date' => $booking->booking_date instanceof \Carbon\Carbon ? $booking->booking_date->format('Y-m-d') : (string) $booking->booking_date
                 ];
             });
 

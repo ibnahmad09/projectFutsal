@@ -105,7 +105,7 @@ class HomeController extends Controller
             $field = Field::findOrFail($request->field_id);
 
             // Hitung end_time
-            $start = \Carbon\Carbon::parse($request->start_time);
+            $start = \Carbon\Carbon::parse($request->start_time)->setTimezone('Asia/Jakarta');
             $end = $start->copy()->addHours($request->duration);
 
             // Cek ketersediaan

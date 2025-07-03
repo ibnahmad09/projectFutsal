@@ -214,6 +214,7 @@ function validateStep1() {
 function updateConfirmationData() {
     const duration = parseInt(document.getElementById('duration').value);
     const price = duration * {{ $field->price_per_hour }};
+    const payment_method = document.getElementById('payment_method').value;
 
     document.getElementById('confirmDate').textContent =
         document.getElementById('booking_date').value;
@@ -228,7 +229,8 @@ function updateConfirmationData() {
         booking_date: document.getElementById('booking_date').value,
         start_time: selectedTime,
         duration: duration,
-        total_price: price
+        total_price: price,
+        payment_method: payment_method
     };
 }
 
@@ -251,58 +253,69 @@ document.getElementById('payment_method').addEventListener('change', function() 
 async function submitBooking(e) {
     e.preventDefault();
 
-    const formData = {
-        field_id: bookingData.field_id,
-        booking_date: bookingData.booking_date,
-        start_time: bookingData.start_time,
-        duration: bookingData.duration,
-        payment_method: document.getElementById('payment_method').value
-    };
+    const payment_method = document.getElementById('payment_method').value;
 
-    try {
-        // Request hanya untuk mendapatkan snap_token, TIDAK menyimpan booking ke database
-        const response = await fetch('{{ route("user.bookings.snap_token") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify(formData)
-        });
+    if (payment_method === 'e-wallet') {
+        // Request snap_token, tampilkan popup Midtrans
+        const formData = {
+            field_id: bookingData.field_id,
+            booking_date: bookingData.booking_date,
+            start_time: bookingData.start_time,
+            duration: bookingData.duration,
+            payment_method: payment_method
+        };
 
-        const data = await response.json();
-
-        // Jika response tidak sukses
-        if (!response.ok) {
-            throw new Error(data.message || 'Terjadi kesalahan sistem');
-        }
-
-        if (data.snap_token) {
-            window.snap.pay(data.snap_token, {
-                onSuccess: function(result) {
-                    // Pembayaran sukses, simpan booking ke database
-                    saveBookingToDatabase(formData);
+        try {
+            // Request hanya untuk mendapatkan snap_token, TIDAK menyimpan booking ke database
+            const response = await fetch('{{ route("user.bookings.snap_token") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                onPending: function(result) {
-                    // Pembayaran pending, simpan booking ke database
-                    saveBookingToDatabase(formData);
-                },
-                onError: function(result) {
-                    // Pembayaran gagal, redirect ke halaman gagal
-                    window.location.href = '{{ route("user.failed") }}';
-                },
-                onClose: function() {
-                    // User menutup popup, redirect ke halaman gagal
-                    window.location.href = '{{ route("user.failed") }}';
-                }
+                body: JSON.stringify(formData)
             });
-        } else {
-            Swal.fire('Success!', data.message, 'success');
-            closeBookingModal();
+
+            const data = await response.json();
+
+            // Jika response tidak sukses
+            if (!response.ok) {
+                throw new Error(data.message || 'Terjadi kesalahan sistem');
+            }
+
+            if (data.snap_token) {
+                window.snap.pay(data.snap_token, {
+                    onSuccess: function(result) {
+                        // Pembayaran sukses, simpan booking ke database
+                        bookingData.payment_method = payment_method;
+                        saveBookingToDatabase(bookingData);
+                    },
+                    onPending: function(result) {
+                        // Pembayaran pending, simpan booking ke database
+                        bookingData.payment_method = payment_method;
+                        saveBookingToDatabase(bookingData);
+                    },
+                    onError: function(result) {
+                        // Pembayaran gagal, redirect ke halaman gagal
+                        window.location.href = '{{ route("user.failed") }}';
+                    },
+                    onClose: function() {
+                        // User menutup popup, redirect ke halaman gagal
+                        window.location.href = '{{ route("user.failed") }}';
+                    }
+                });
+            } else {
+                Swal.fire('Success!', data.message, 'success');
+                closeBookingModal();
+            }
+        } catch (error) {
+            console.error('Booking Error:', error);
+            Swal.fire('Error!', error.message || 'Terjadi kesalahan sistem', 'error');
         }
-    } catch (error) {
-        console.error('Booking Error:', error);
-        Swal.fire('Error!', error.message || 'Terjadi kesalahan sistem', 'error');
+    } else {
+        // Langsung simpan booking ke database, tanpa Midtrans
+        bookingData.payment_method = payment_method;
+        saveBookingToDatabase(bookingData);
     }
 }
 
