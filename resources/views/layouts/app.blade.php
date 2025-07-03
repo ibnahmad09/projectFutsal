@@ -22,6 +22,7 @@
 
     <!-- Icons -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    @laravelPWA
 </head>
 <body class="bg-gradient-to-r from-green-50 to-green-100">
     <div id="app">

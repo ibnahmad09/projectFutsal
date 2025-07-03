@@ -28,9 +28,50 @@
             font-weight: bold;
             text-transform: uppercase;
         }
+        #loader-wrapper {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #fff;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rolling-ball {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 20px 20px, #4caf50 70%, #388e3c 100%);
+            position: relative;
+            animation: roll 1.2s cubic-bezier(.68,-0.55,.27,1.55) infinite;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        @keyframes roll {
+            0% {
+                transform: translateX(0) rotate(0deg);
+                box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            }
+            50% {
+                transform: translateX(120px) rotate(360deg);
+                box-shadow: 0 16px 32px rgba(0,0,0,0.10);
+            }
+            100% {
+                transform: translateX(0) rotate(720deg);
+                box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            }
+        }
     </style>
+    @laravelPWA
 </head>
 <body class="bg-gray-50">
+    <!-- Loader Start -->
+    <div id="loader-wrapper">
+        <div class="rolling-ball"></div>
+    </div>
+    <!-- Loader End -->
+
     <!-- Navbar -->
     <nav class="bg-green-700 shadow-lg fixed w-full z-50">
         <div class="max-w-7xl mx-auto px-4">
@@ -140,6 +181,10 @@
             if (!button.contains(event.target) && !mobileMenu.contains(event.target)) {
                 mobileMenu.style.display = 'none';
             }
+        });
+
+        window.addEventListener('load', function() {
+            document.getElementById('loader-wrapper').style.display = 'none';
         });
     </script>
 </body>
